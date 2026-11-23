@@ -35,7 +35,7 @@ def check(exe):
         acf = apps / ("appmanifest_" + APP_ID + ".acf")
         acf.write_text(f'"appid" "{APP_ID}"\n"installdir" "{game.name}"\n"buildid" "246810"\n', encoding="utf-8")
         run(exe, ["--build", game], root, 0, "246810")
-        run(exe, ["--locate", game], root, 0, str(game))
+        run(exe, ["--locate", game], root, 0, str(game.resolve()))
     print("Packaged EXE passed directory validation and Steam build checks.")
 
 
