@@ -68,11 +68,25 @@ def audit(tables):
     hard = defaultdict(list)
     candidates = defaultdict(list)
     counts = {}
+    trait_labels = {}
+    trait_buttons = {}
+    trait_headings = {}
     for key,rows in tables:
         counts[key] = len(rows)
         groups = defaultdict(list)
         for line,(en,ru,base,zh) in enumerate(rows,1):
             ref=(key,line)
+            # The same character trait appears in the ballot, the nomination
+            # report's format argument and the officeholder's tooltip.
+            if key == 'event_text':
+                if 8325 <= line <= 8344:
+                    trait_labels[line-8325] = compact(zh)
+                elif 8298 <= line <= 8307:
+                    trait_buttons[line-8298] = compact(zh)
+                elif 8312 <= line <= 8321:
+                    trait_buttons[line-8302] = compact(zh)
+            elif key == 'gui_text' and 760 <= line <= 779:
+                trait_headings[line-760] = compact(plain(zh.split('|',1)[0]))
             if bool(base.strip())!=bool(zh.strip()):
                 hard['blank_shift'].append(ref)
             if re.search(r'[{}]',FORMAT.sub('',zh)):
@@ -102,6 +116,12 @@ def audit(tables):
         for entries in groups.values():
             if len({en for _,en,_ in entries})>1 and len({ru for _,_,ru in entries})>1:
                 candidates['shared_translation'].extend((key,n) for n,_,_ in entries)
+    for idx, name in trait_labels.items():
+        role = '总统' if idx < 10 else '总理'
+        if trait_headings.get(idx) != f'{role}（{name}）':
+            hard['candidate_trait_heading'].append(('gui_text',760+idx))
+        if trait_buttons.get(idx) != f'提名候选人（{name}）':
+            hard['candidate_trait_ballot'].append(('event_text',(8298 if idx<10 else 8302)+idx))
     return counts,hard,candidates
 
 def main():
