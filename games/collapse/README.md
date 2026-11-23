@@ -4,25 +4,25 @@
 
 ## 安装与还原
 
-1. 关闭游戏，保持拥有游戏的 Steam 客户端在线，安装 64 位 Python 3.9 或更新版本。
-2. 在解压后的仓库根目录打开终端，运行下面的命令。若工坊底包尚未安装，安装器向 Steam 请求临时缓存，不会更改订阅。
-
-```powershell
-py -3 games/collapse/collapse.py install
-```
-
+1. 从本游戏的发行页下载文件名以 `-Setup.exe` 结尾的 Windows 安装器。安装器内含运行环境。[下载独立安装器](https://github.com/lingjieheti/collapse-political-simulator-zh-cn/releases/latest)
+2. 关闭游戏，双击安装器，选择安装。它会定位 Steam 游戏目录，再从已经安装的底包或其他已登记的 Steam 库获取中文文本。首次获取工坊底包时，请让拥有游戏的 Steam 账号保持登录并联网。
 3. 从 Steam 启动游戏。补丁使用游戏的 **English** 语言槽。若之前在游戏内启用过工坊语言模组，请将其停用，返回主菜单，再重启游戏。主菜单会显示“开始新游戏”和“读取存档”。
 
-校验当前安装或还原原始文件：
+再次打开同一安装器即可校验或还原。已有旧版独立补丁或合集补丁时，安装器会沿用游戏目录内的原件备份。确认选择的游戏目录内含 `PoliticalSimulator.exe` 和 `PoliticalSimulator_Data`。
+
+## 从源码运行
+
+在源码根目录用 64 位 Python 3.12 运行以下命令。安装器使用标准库，无需另装 Python 软件包。
 
 ```powershell
-py -3 games/collapse/collapse.py check
-py -3 games/collapse/collapse.py restore
+py -3.12 games/collapse/collapse.py install
+py -3.12 games/collapse/collapse.py check
+py -3.12 games/collapse/collapse.py restore
 ```
 
-自动定位失败时，用 `--game "游戏文件夹"` 指定安装目录。底包已另存时，用 `--workshop "含 gui_text.txt 的工坊物品文件夹"` 指定来源。字体放在仓库根目录的 `fonts` 内，也可用 `--fonts "字体文件夹"` 指定。还原仅使用游戏目录 `.collapse-zh-24949409` 下的备份，不需要工坊在线。
+手动指定游戏目录时可追加 `--game-dir "游戏文件夹"`。底包已另存时，用 `--workshop "含 gui_text.txt 的工坊物品文件夹"` 指定来源。字体放在仓库根目录的 `fonts` 内，也可用 `--fonts "字体文件夹"` 指定。
 
-安装器核对游戏、字体和工坊源文本的 SHA-256 后写入，并保留原件。Steam 更新或其他模组改动文件后，若校验值改变，安装器会停止。若工坊临时缓存被 Steam 回收，可从对应工坊页重新获取，再执行校验。存档独立于这些文件。
+安装器核对游戏、字体和工坊源文本的 SHA-256 后写入，并保留原件。游戏目录下的 `.collapse-zh-24949409` 保存五个原件以及本机已验证的七张工坊文本表，后续可以离线核验和还原。若 Steam 更新游戏或其他模组改动了相关文件，校验值改变时安装器会停止。存档独立于这些文件。
 
 ## 文本与显示
 

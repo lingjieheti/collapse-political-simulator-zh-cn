@@ -1,4 +1,4 @@
-"""Install a verified local text-only overlay for Steam build 24949409 (Python 3.9+)."""
+"""Install or restore the Chinese overlay for Steam build 24949409."""
 import argparse
 import contextlib
 import hashlib
@@ -9,6 +9,10 @@ import struct
 import sys
 import tempfile
 from pathlib import Path
+from itertools import chain
+
+# The Windows embeddable runtime excludes the script directory from sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from layout import wrap_chinese
 
 GAME = 'Collapse A Political Simulator'
@@ -46,16 +50,84 @@ def atomic_write(path, data):
     finally:
         tmp.unlink(missing_ok=True)
 
-def locate():
+def steam_roots():
+    if os.name != 'nt':
+        return
     import winreg
-    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Software\\Valve\\Steam') as k:
-        steam = Path(winreg.QueryValueEx(k, 'SteamPath')[0])
-    config = (steam / 'steamapps/libraryfolders.vdf').read_text('utf-8-sig')
-    for base in [steam] + [Path(s.replace('\\\\', '\\')) for s in re.findall(r'"path"\s+"([^"]+)"', config)]:
-        game = base / 'steamapps/common' / GAME
-        if (game / ASSET).is_file():
-            return game
+    for hive, value, view in (
+        (winreg.HKEY_CURRENT_USER, 'SteamPath', 0),
+        (winreg.HKEY_LOCAL_MACHINE, 'InstallPath', winreg.KEY_WOW64_32KEY),
+        (winreg.HKEY_LOCAL_MACHINE, 'InstallPath', winreg.KEY_WOW64_64KEY),
+    ):
+        try:
+            with winreg.OpenKey(hive, r'Software\Valve\Steam', 0, winreg.KEY_READ | view) as key:
+                yield Path(winreg.QueryValueEx(key, value)[0])
+        except OSError:
+            continue
+    for variable in ('ProgramFiles(x86)', 'ProgramFiles'):
+        if os.environ.get(variable):
+            yield Path(os.environ[variable]) / 'Steam'
+
+def steam_libraries():
+    seen = set()
+    for root in steam_roots():
+        if root not in seen:
+            seen.add(root)
+            yield root
+        config = root / 'steamapps/libraryfolders.vdf'
+        if not config.is_file():
+            continue
+        data = config.read_text('utf-8-sig')
+        # Older Steam clients put the path directly in a numbered string.
+        for value in re.findall(r'^\s*"(?:path|\d+)"\s*"([^"\r\n]+)"',data,re.M | re.I):
+            folder = Path(value.replace('\\\\', '\\'))
+            if folder.is_absolute() and folder not in seen:
+                seen.add(folder)
+                yield folder
+
+def locate():
+    for base in steam_libraries():
+        apps = base / 'steamapps'
+        manifest = apps / 'appmanifest_990260.acf'
+        names = [GAME]
+        if manifest.is_file():
+            match = re.search(r'"installdir"\s*"([^"\r\n]+)"', manifest.read_text('utf-8-sig'), re.I)
+            if match and Path(match[1]).name == match[1] and match[1] not in ('.', '..'):
+                names.insert(0, match[1])
+        for name in names:
+            game = apps / 'common' / name
+            if (game / ASSET).is_file():
+                return game
     raise ValueError('未找到游戏，请用 --game 指定游戏目录。')
+
+def find_workshop(game):
+    relative = Path('workshop/content/990260') / ITEM
+    local = game / '.collapse-zh-24949409' / ('workshop-' + ITEM)
+    same_library = game.parent.parent / relative
+    seen = set()
+    for folder in chain((local, same_library), (base/'steamapps'/relative for base in steam_libraries())):
+        if folder not in seen:
+            try:
+                if all(digest((folder/(key+'.txt')).read_bytes()) == spec[3] for key,spec in TABLES.items()):
+                    return folder
+            except OSError:
+                pass
+            seen.add(folder)
+    return None
+
+def cache_workshop(source, state):
+    # Unsubscribed items can be evicted by Steam. Keep only the seven pinned
+    # language tables locally so future verification works without a download.
+    folder = state / ('workshop-' + ITEM)
+    if source == folder:
+        return
+    folder.mkdir(exist_ok=True)
+    for key, spec in TABLES.items():
+        path = folder / (key + '.txt')
+        content = (source/path.name).read_bytes()
+        require(digest(content) == spec[3], '写入缓存前工坊底包发生变化：' + key)
+        if not path.is_file() or digest(path.read_bytes()) != spec[3]:
+            atomic_write(path, content)
 
 def load_edits():
     out = {key: {} for key in TABLES}
@@ -198,8 +270,10 @@ def operation(args, game):
     if args.action == 'restore':
         targets = originals
     else:
-        upstream = args.workshop or game.parent.parent / 'workshop/content/990260' / ITEM
-        if args.action=='install' and not args.workshop and not (upstream/'gui_text.txt').is_file():
+        upstream = args.workshop or find_workshop(game)
+        if upstream is None:
+            if args.action == 'check':
+                raise ValueError('校验需要工坊 3771481708 的 3.1.0.1 底包。请恢复工坊下载或用 --workshop 指定目录。')
             from workshop import download
             upstream = download(game)
         data, counts = build(originals['resources.assets'], upstream)
@@ -213,6 +287,8 @@ def operation(args, game):
         fonts = {weight:add_icons(font,weight) for weight,font in fonts.items()}
         for name in VISUAL_HASHES:
             targets[name] = build_visual(name, originals[name], fonts)
+        if args.action == 'install':
+            cache_workshop(upstream, state)
     modified = [n for n in hashes if currents[n] != targets[n]]
     for name, data in targets.items():
         print(f'{name}  {digest(data)}')
@@ -257,7 +333,7 @@ def run(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action',choices=['install','check','restore'])
-    parser.add_argument('--game',type=Path)
+    parser.add_argument('--game','--game-dir',type=Path)
     parser.add_argument('--workshop',type=Path)
     parser.add_argument('--fonts',type=Path)
     try:

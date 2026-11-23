@@ -8,6 +8,7 @@ import sys
 import unicodedata
 
 sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import collapse
 
 RUSSIAN_OBJECTS = {'system_text':663, 'credits_text':664, 'gui_text':667,
@@ -105,13 +106,14 @@ def audit(tables):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--game',type=Path)
+    p.add_argument('--game','--game-dir',type=Path)
     p.add_argument('--workshop',type=Path)
     p.add_argument('--list',action='store_true',help='列出候选项编号。')
     p.add_argument('--show',nargs=2,metavar=('TABLE','ROW'),help='本机显示指定行的四栏内容。')
     args=p.parse_args()
     game=args.game or collapse.locate()
-    workshop=args.workshop or game.parent.parent/'workshop/content/990260'/collapse.ITEM
+    workshop=args.workshop or collapse.find_workshop(game)
+    collapse.require(workshop is not None, '请先获取工坊底包，或用 --workshop 指定其目录。')
     tables=dict(read_tables(game,workshop))
     if args.show:
         key,s=args.show; n=int(s)
