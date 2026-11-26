@@ -23,8 +23,8 @@ jobs:
           architecture: x64
       - name: Check release files and player commands without Steam
         run: python -B -X utf8 tools/check_release.py
-      - name: Test game text regressions
-        run: python -B -X utf8 games/collapse/test_community.py
+      - name: Test translations and scene layout
+        run: python -B -X utf8 -m unittest discover -s games/collapse -p "test_*.py"
 
 
   installer-smoke:

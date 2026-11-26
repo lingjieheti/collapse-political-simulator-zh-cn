@@ -4,6 +4,7 @@ import struct
 QUALITY = 'globalgamemanagers'
 VISUAL_HASHES = {
     'level4': 'e1504c4d3aa469a28efd01b31a994aaadf3db009ebb1746c78388317628efe10',
+    'level15': '1843918192931e74a2276d911b48d1535630f5c13eb99d0362ef24118473863c',
     QUALITY: 'd9c3ea7f7c2d2259b2b8afd7f8de98af27483ea364a5ba1a03b4ef6409bc6fab',
     'sharedassets0.assets': '024c8f9fd00c0797e3076413130dcb50162aa7dab5268fc6b055d35ff423ca1d',
     'sharedassets5.assets': 'f3cb4b1135fc235e10f4937c1c35e31209adecfbc7787e27d1ffae71b0f66369',
@@ -46,6 +47,18 @@ def font_family(font):
 
 def build_visual(name, pristine, fonts):
     out = bytearray(pristine)
+    if name == 'level15':
+        # Back/UI/MainText (TextMesh 111) displays the title of each backstory.
+        # Scale within the fixed red strip and centre the ink vertically.
+        # Transform 61 retains the title's left edge and depth.
+        offset = 14232
+        position = 8620
+        if (out[offset:offset+8] != struct.pack('<ff',0.32,1.0) or
+                out[position:position+12] != struct.pack('<fff',-13.05,6.05,-1.0)):
+            raise ValueError('人物背景故事标题的字体字段与预期不符。')
+        struct.pack_into('<f',out,offset,0.25)
+        struct.pack_into('<f',out,position+4,6.11)
+        return bytes(out)
     if name == 'level4':
         # GameSelect/Back/TextField/TextZ and UI (0)/TextField (1)/Text.
         # Both panels take their width from a fixed world-space constant in
