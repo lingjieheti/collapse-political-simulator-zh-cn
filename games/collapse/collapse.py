@@ -142,10 +142,25 @@ def load_edits():
 # actual substitutions. Keep both intact. Short labels fit without inter-character
 # spaces; retain the word-wrap opportunities in long community narrative paragraphs.
 CJK = r'\u3400-\u9fff，。！？、；：（）《》“”‘’…·'
+# Some imported names have indistinguishable word and letter spacing.
+# The replacements are scoped to the corresponding pinned Workshop rows.
+SPACED_NAMES = {
+    ('event_text', 326): {'M a v r e i  S e r g o d i': 'Mavrei Sergodi'},
+    ('event_text', 799): {'S U V': 'SUV'},
+    ('event_text', 1193): {'O S F B': 'OSFB'},
+    ('event_text', 4382): {'G U H O   S H E F': 'GUHO SHEF'},
+    ('event_text', 5576): {'I W a n n a': 'I Wanna'},
+    ('event_text', 8030): {'J o s e f   M o r a v c i k': 'Josef Moravcik',
+                           'M i k u l a s   D z u r i n d a': 'Mikulas Dzurinda'},
+    ('system_text', 1310): {'r e s   p u b l i c a': 'res publica'},
+}
+
 def clean_line(key, num, old, original):
     if key == 'credits_text':
         return old
     line = old.replace('<color=<#', '<color=#')
+    for spaced, name in SPACED_NAMES.get((key, num), {}).items():
+        line = line.replace(spaced, name)
     line = re.sub(r'<\s*/\s*color\s*>', '</color>', line, flags=re.I)
     line = re.sub(r'<\s*color\s*=\s*#\s*([a-f\d]{6,8})\s*>', r'<color=#\1>', line, flags=re.I)
     line = re.sub(r'\{\s+(\d+)\s*\}', r'{\1}', line)
@@ -154,9 +169,15 @@ def clean_line(key, num, old, original):
         if re.search(r'(?<![A-Za-z0-9])'+re.escape(candidate)+r'(?![A-Za-z0-9])',original,re.I):
             return candidate
         return match[0]
-    line = re.sub(r'(?<![A-Za-z0-9])(?:\d +)+\d(?![A-Za-z0-9])',joined,line)
+    # Only runs of single digits are legacy padding. Groups such as
+    # 710 609 175 are conventional thousands separators. The source may
+    # express dates and quantities in words (November, four million).
+    line = re.sub(r'(?<![0-9])(?:[0-9] +)+[0-9](?![0-9])',
+                  lambda match: match[0].replace(' ', ''), line)
     line = re.sub(r'(?<![A-Za-z])(?:[A-Za-z] +){2,}[A-Za-z](?![A-Za-z])',joined,line)
     line = re.sub(r'(?<=\d) +\. +(?=\d)', '.', line)
+    if key == 'gui_text' and num in (563, 564, 565):
+        line = line.replace('0. 5', '0.5')
     if key == 'event_text':
         if num == 2503:
             line = line.replace('{0}}','{0}')
@@ -178,6 +199,14 @@ def clean_line(key, num, old, original):
         line = re.sub(r'公\s*关\s*委\s*员\s*会', '公共对话委员会', line)
     if key == 'system_text' and 1575 <= num <= 1580:
         line = re.sub(r'制\s*造\s*业', '建筑业', line)
+    if (key, num) == ('system_text', 1308):
+        sections = line.split('||')
+        heading = sections[9].partition('|')[0].replace(' ', '')
+        require(heading == '<color=#780200>不受待见。</color>', '国家人民党指南条目不符。')
+        sections[9] = ('<color=#780200>孤立者</color>|其他政党不信任国家人民党。'
+                       '该党难以改善与其他党的关系，也难以扩大对其他党的影响。'
+                       '每年一月，盟党对本党的不信任值增加1点，国家人民党已有的违宪点数减少1点。')
+        line = '||'.join(sections)
     if key == 'event_text' and num == 1220:
         line = re.sub(r'^\s*社\s*会\s*党', '{0}', line)
     if key == 'event_text' and num in (1611, 1612, 2506):

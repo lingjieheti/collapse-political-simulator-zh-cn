@@ -80,11 +80,19 @@ def wrap_chinese(text):
     # U+200A restores the original .224/.226-em space advance for names and
     # credits; the other CJK wrap opportunities use the narrow .080-em space.
     parts = SPECIAL.split(text)
+    chinese = re.search(fr'[{HAN}]', ''.join(parts[::2]))
     for i in range(0,len(parts),2):
+        if chinese:
+            # In this renderer an ASCII space is a legal wrap point.
+            # Keep a percentage or a signed tooltip value on one line.
+            part = re.sub(r'(?<=[0-9]) +(?=[%％])', '', parts[i])
+            part = re.sub(r'([:：] *[+−-]) +(?=[0-9])', r'\1', part)
+            part = re.sub(r'— +—', '——', part)
+            parts[i] = re.sub(' {2,}', ' ', part)
         parts[i] = re.sub(r'(?<=[A-Za-zÀ-ɏА-Яа-яЁё]) (?=[A-Za-zÀ-ɏА-Яа-яЁё])',' \u200a',parts[i])
     text = ''.join(parts)
     bare = SPECIAL.sub('',text)
-    if not re.search(fr'[{HAN}]',bare):
+    if not chinese:
         return text
     if len(re.sub(r'\s','',bare)) <= 6:
         return re.sub(fr'(?<=[{HAN}]) +(?=[{HAN}])','',text)
