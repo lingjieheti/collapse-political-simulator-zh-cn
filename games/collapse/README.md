@@ -6,7 +6,9 @@
 
 1. 从本游戏的发行页下载文件名以 `-Setup.exe` 结尾的 Windows 安装器。安装器内含运行环境。[下载独立安装器](https://github.com/lingjieheti/collapse-political-simulator-zh-cn/releases/latest)
 2. 关闭游戏，双击安装器，选择安装。它会定位 Steam 游戏目录，再从已经安装的底包或其他已登记的 Steam 库获取中文文本。首次获取工坊底包时，请让拥有游戏的 Steam 账号保持登录并联网。
-3. 从 Steam 启动游戏。补丁使用游戏的 **English** 语言槽。若之前在游戏内启用过工坊语言模组，请将其停用，返回主菜单，再重启游戏。主菜单会显示“开始新游戏”和“读取存档”。
+3. 从 Steam 启动游戏。打开设置，语言一项选择 **简体中文**。若之前在游戏内启用过工坊语言模组，请将其停用，返回主菜单，再重启游戏。主菜单会显示“开始新游戏”和“读取存档”。
+
+普通与背景故事存档列表按字形宽度显示名称。点击带省略号的行，列表底部会显示完整名称。搜索仍可匹配完整名称，输入过长时会自动滚到最新输入的字符。
 
 再次打开同一安装器即可校验或还原。已有旧版独立补丁或合集补丁时，安装器会沿用游戏目录内的原件备份。确认选择的游戏目录内含 `PoliticalSimulator.exe` 和 `PoliticalSimulator_Data`。
 
@@ -59,3 +61,5 @@ py -3.12 games/collapse/collapse.py restore
 底包为云中雾中雨中雪的《简体中文优化版 3.1.0.1》，工坊物品 3771481708。上游注明其基于《简体中文本地化》修订。安装器仅在本机读取所需的七张文本表，仓库提交的是差分、排版规则和安装程序。[优化版工坊页](https://steamcommunity.com/sharedfiles/filedetails/?id=3771481708) · [clovem 的基础汉化](https://steamcommunity.com/sharedfiles/filedetails/?id=3727094112)
 
 原作由 Nostalgames 开发和发行。字体的作者与授权请见仓库 `fonts` 下的 OFL 文档。Collapse 专用字体差分在安装时为两个字重添加四个场景符号：✖、☑、☈、֍。前三个轮廓来自 Noto Sans Symbols 2，后一个来自 Noto Sans Armenian，详见本目录的两份 OFL 许可。[游戏商店页](https://store.steampowered.com/app/990260/Collapse_A_Political_Simulator/) · [Noto Symbols](https://github.com/notofonts/symbols) · [Noto Armenian](https://github.com/notofonts/armenian)
+
+保存列表和设置的显示修订在玩家本地编译，需要 Windows 自带的 .NET Framework 4 编译组件。安装器使用随包提供的 Mono.Cecil 0.11.6，先校验 Steam 原件和构建组件，再核验生成结果。发布版包括适配源码、官方 NuGet 包和 MIT 许可证。[Mono.Cecil 项目](https://github.com/jbevain/cecil) · [NuGet 发行包](https://www.nuget.org/packages/Mono.Cecil/0.11.6)

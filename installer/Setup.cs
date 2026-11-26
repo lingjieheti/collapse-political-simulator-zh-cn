@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 [assembly: AssemblyTitle("崩溃：政治模拟器 简体中文汉化补丁")]
 [assembly: AssemblyProduct("崩溃：政治模拟器 简体中文汉化补丁")]
-[assembly: AssemblyVersion("1.2.3.0")]
+[assembly: AssemblyVersion("1.2.4.0")]
 
 internal sealed class Payload : IDisposable
 {
@@ -143,7 +143,7 @@ internal sealed class Installer : Form
             Text = "崩溃：政治模拟器", AutoSize = true, Anchor = AnchorStyles.Left,
             Font = new Font(Font.FontFamily, 16, FontStyle.Bold)
         };
-        version.Text = "汉化 v1.2.3　·　适配 Steam 构建 24949409";
+        version.Text = "汉化 v1.2.4　·　适配 Steam 构建 24949409";
         version.AutoSize = true;
         version.Anchor = AnchorStyles.Left;
         panel.Controls.Add(title,0,0); panel.SetColumnSpan(title,2);
@@ -212,7 +212,7 @@ internal sealed class Installer : Form
             });
             game = found.Item1;
             path.Text = game;
-            version.Text = "汉化 v1.2.3　·　适配 24949409　·　本机 " +
+            version.Text = "汉化 v1.2.4　·　适配 24949409　·　本机 " +
                            (found.Item2 == "unknown" ? "未读到构建号" : found.Item2);
             status.Text = found.Item2 != "unknown" && found.Item2 != "24949409"
                 ? "游戏构建与适配版本不同。安装前会核对文件，请留意兼容性提示。"
@@ -248,7 +248,7 @@ internal sealed class Installer : Form
                 });
                 if (action == "install") payload.Run("verify",game,null);
             });
-            string message = action == "install" ? "汉化已安装并核验。请从 Steam 启动游戏并使用 English 语言槽。" : action == "verify" ? "核验通过，汉化文件完整。" : "已还原。";
+            string message = action == "install" ? "汉化已安装并核验。请从 Steam 启动游戏，在设置中选择“简体中文”。" : action == "verify" ? "核验通过，汉化文件完整。" : "已还原。";
             status.Text = message;
             MessageBox.Show(this,message,Text,MessageBoxButtons.OK,MessageBoxIcon.Information);
         }

@@ -277,6 +277,7 @@ def installation_lock(state):
 
 def operation(args, game):
     from visual_assets import VISUAL_HASHES, build_visual
+    import save_names
     directory = (game / ASSET).parent
     state = game / '.collapse-zh-24949409'
     receipt = state / 'installed.json'
@@ -285,14 +286,14 @@ def operation(args, game):
     if 'installed' in prior:
         previous['resources.assets'] = prior
     originals, currents, targets = {}, {}, {}
-    hashes = {'resources.assets': PRISTINE, **VISUAL_HASHES}
+    hashes = {'resources.assets': PRISTINE, **VISUAL_HASHES, save_names.FILE: save_names.ORIGINAL}
     for name, expected in hashes.items():
         data = (directory/name).read_bytes()
         current_hash = digest(data)
         old = previous.get(name,{})
         require(current_hash in {expected,old.get('previous'),old.get('installed')},
                 f'当前版本或资源与补丁不匹配：{name}')
-        backup = state / (name + '.original')
+        backup = state / (Path(name).name + '.original')
         originals[name] = data if current_hash == expected else backup.read_bytes()
         require(digest(originals[name]) == expected, f'原始备份校验失败：{name}')
         currents[name] = data
@@ -316,6 +317,9 @@ def operation(args, game):
         fonts = {weight:add_icons(font,weight) for weight,font in fonts.items()}
         for name in VISUAL_HASHES:
             targets[name] = build_visual(name, originals[name], fonts)
+        current_code = currents[save_names.FILE]
+        targets[save_names.FILE] = (current_code if digest(current_code) == save_names.PATCHED
+                                    else save_names.build(originals[save_names.FILE], directory/'Managed'))
         if args.action == 'install':
             cache_workshop(upstream, state)
     modified = [n for n in hashes if currents[n] != targets[n]]
@@ -329,7 +333,7 @@ def operation(args, game):
         print('已经处于要求的状态。')
         return
     for name in modified:
-        backup = state / (name + '.original')
+        backup = state / (Path(name).name + '.original')
         if backup.exists():
             require(digest(backup.read_bytes()) == hashes[name], f'备份不匹配：{name}')
         else:
@@ -348,7 +352,7 @@ def operation(args, game):
         for name in reversed(committed):
             atomic_write(directory/name,currents[name])
         raise
-    print('已还原原版文件。' if args.action=='restore' else '已安装。请使用 English 语言槽，并停用游戏内其他工坊语言包。')
+    print('已还原原版文件。' if args.action=='restore' else '已安装。请在设置中选择“简体中文”，并停用游戏内其他工坊语言包。')
 
 def run(args):
     game = (args.game or locate()).resolve()

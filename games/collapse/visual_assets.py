@@ -42,7 +42,9 @@ MESH_SIZES = {
     ),
     'level5': ((.12, .10, (988,)),),  # pause menu: save game
     'level6': (
-        (.05, .034, (628,)),  # two lines between the last stripe and input box
+        (.10, .08, (569,)),   # full name of a selected, shortened row
+        (.12, .08, (621,)),   # filter text on the narrow search plate
+        (.05, .030, (628,)),  # leave space between the hint and the name counter
         (.08, .065, (562, 571, 575, 588, 594, 597, 598, 604, 609, 616, 625,
                      626, 631, 637, 639, 648, 652)),  # footer, filters and confirmation buttons
         (.12, .085, (  # save-list headings and 11 data rows per column
@@ -70,6 +72,7 @@ MESH_SIZES = {
 # captions in their 0.171-world-unit rows. Values are local to each parent.
 TRANSFORM_Y = {
     'level2': ((1.03, .76, (145,)),),
+    'level6': ((.482, 1.08, (206,)),),
     'level13': ((-.10, -.035, (354, 358, 400, 403, 436, 452, 505, 511, 536,
                                537, 585, 620, 629, 639, 663, 683)),),
 }
@@ -125,12 +128,18 @@ def fit_scene_controls(scene, data):
             replace_field(data, size_field, '<f', old_size, new_size)
             if scene == 'level2' and object_id == 283:
                 replace_field(data, size_field + 8, '<H', 1, 4)  # UpperCenter -> MiddleCenter
-            if scene == 'level6' and object_id == 628:
-                replace_field(data, size_field + 4, '<f', 1, .82)
+            if scene == 'level6' and object_id == 569:
+                replace_field(data, size_field + 8, '<H', 0, 3)  # UpperLeft → MiddleLeft
     for old_y, new_y, ids in TRANSFORM_Y.get(scene, ()):
         for object_id in ids:
             start = object_offset(scene, data, object_id, transform_type)
             replace_field(data, start + 32, '<f', old_y, new_y)
+    if scene == 'level6':
+        # Repurpose the original empty selection caption below the last row.
+        # Its object remains in the original hierarchy and zooms with the list.
+        start = object_offset(scene, data, 206, transform_type)
+        replace_field(data, start + 28, '<f', -1.24454534, -3.19)
+        replace_field(data, start + 36, '<f', -1, -2)
     if scene == 'level5':
         fit_map_calendar(data)
 

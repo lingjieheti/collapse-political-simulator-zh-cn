@@ -37,11 +37,15 @@ def synthetic_scene(name):
                     if name == 'level2' and i == 283:
                         struct.pack_into('<H', source, field + 8, 1)
                         struct.pack_into('<H', expected, field + 8, 4)
-                    if name == 'level6' and i == 628:
-                        struct.pack_into('<f', source, field + 4, 1)
-                        struct.pack_into('<f', expected, field + 4, .82)
+                    if name == 'level6' and i == 569:
+                        struct.pack_into('<H', source, field + 8, 0)
+                        struct.pack_into('<H', expected, field + 8, 3)
                 else:
                     field = obj + 32
+                    if name == 'level6' and i == 206:
+                        for offset, before, after in ((28, -1.24454534, -3.19), (36, -1, -2)):
+                            struct.pack_into('<f', source, obj + offset, before)
+                            struct.pack_into('<f', expected, obj + offset, after)
                 struct.pack_into('<f', source, field, old)
                 struct.pack_into('<f', expected, field, new)
                 relative += 100
@@ -100,7 +104,7 @@ class SceneLayoutTests(unittest.TestCase):
         # The baked dialog texture has a 50-pixel gap at 100 pixels per unit.
         # The counter updates on a second line, even for an empty name.
         caption_em = 7 * size_for('level6', 628)
-        self.assertLess(caption_em * (1 + .82), .50 - .05)
+        self.assertLess(caption_em * 2, .50 - .05)
         self.assertLess(7 * 6 * size_for('level2', 283), 2.65 - .15)
         self.assertLess(4 * 12 * .45 * size_for('level5', 988), 2.376 - .15)
         self.assertLess(6 * 8 * .45 * size_for('level12', 408), 1.4535 - .13)
