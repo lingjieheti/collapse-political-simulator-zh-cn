@@ -3,9 +3,12 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import steam_game
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import manage
 
 
 def vdf_path(path):
@@ -35,6 +38,21 @@ class SteamGameTests(unittest.TestCase):
         path = apps / f"appmanifest_{steam_game.APP_ID}.acf"
         path.write_text(f'"AppState"\n{{\n"appid" "{steam_game.APP_ID}"\n"installdir" "{folder}"\n"buildid" "{build}"\n}}\n',
                         encoding="utf-8-sig")
+
+    def test_running_game_protects_its_own_files(self):
+        player = self.make_game(self.client / "playing")
+        other = self.make_game(self.library / "independent")
+        tasks = f'"{steam_game.EXECUTABLE}","123"'
+        with patch.object(manage.subprocess, "check_output", return_value=tasks):
+            with patch.object(manage, "process_image", return_value=player / steam_game.EXECUTABLE):
+                self.assertTrue(manage.game_running(player))
+                self.assertFalse(manage.game_running(other))
+                shared = other / steam_game.ASSET
+                shared.unlink()
+                shared.hardlink_to(player / steam_game.ASSET)
+                self.assertTrue(manage.game_running(other))
+            with patch.object(manage, "process_image", side_effect=PermissionError):
+                self.assertTrue(manage.game_running(other))
 
     def test_modern_library_and_custom_install_dir(self):
         config = ('"libraryfolders"\n{\n"0"\n{\n"path" "' + vdf_path(self.client) +

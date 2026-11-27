@@ -158,6 +158,76 @@ static class BuildSaveNameLayout
                 (string)i.Operand == "dd.MM.yy HH:mm").Operand = "dd.MM.yy\u2002HH:mm";
 
             CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "OwnTranslation"));
+            CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "ChineseHud"));
+            var hudChange = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "HudChangeFormat"));
+            var thousands = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "HudThousands"));
+            var deltaValue = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "HudDeltaValue"));
+            var funding = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "FundingPreview"));
+            var fitHud = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "SetHudText"));
+            var showHud = game.GetType("InfoController").Methods.Single(m => m.Name == "ShowDesc");
+            var formats = showHud.Body.Instructions.Where(i => i.OpCode == OpCodes.Ldstr &&
+                (((string)i.Operand).Contains("({1})") || ((string)i.Operand).Contains("(+{1})"))).ToArray();
+            if (formats.Length != 9) throw new InvalidOperationException("Unexpected HUD change formats");
+            foreach (var format in formats)
+                showHud.Body.GetILProcessor().InsertAfter(format, Instruction.Create(OpCodes.Call, hudChange));
+            var conversions = showHud.Body.Instructions.Where(i => i.OpCode == OpCodes.Conv_R4 &&
+                i.Next.OpCode == OpCodes.Ldc_R4 && (float)i.Next.Operand == 10f &&
+                i.Next.Next.OpCode == OpCodes.Div && i.Next.Next.Next.OpCode == OpCodes.Box &&
+                ((TypeReference)i.Next.Next.Next.Operand).FullName == "System.Single").ToArray();
+            if (conversions.Length != 9) throw new InvalidOperationException("Unexpected HUD delta conversions");
+            foreach (var conversion in conversions) {
+                // The raw integer is already on the stack. Format only the value
+                // displayed by this tooltip; leave the monthly state untouched.
+                var scale = conversion.Next;
+                var divide = scale.Next;
+                var box = divide.Next;
+                conversion.OpCode = OpCodes.Ldarg_1;
+                scale.OpCode = OpCodes.Call;
+                scale.Operand = deltaValue;
+                showHud.Body.GetILProcessor().Remove(divide);
+                showHud.Body.GetILProcessor().Remove(box);
+            }
+            var normalSize = new FieldDefinition("zhHudSize", FieldAttributes.Private, game.TypeSystem.Single);
+            var detailSize = new FieldDefinition("zhHudDetailSize", FieldAttributes.Private, game.TypeSystem.Single);
+            showHud.DeclaringType.Fields.Add(normalSize);
+            showHud.DeclaringType.Fields.Add(detailSize);
+            var meshWrites = showHud.Body.Instructions.Where(i => i.OpCode == OpCodes.Callvirt &&
+                ((MethodReference)i.Operand).FullName == "System.Void UnityEngine.TextMesh::set_text(System.String)").ToArray();
+            if (meshWrites.Length != 12) throw new InvalidOperationException("Unexpected HUD text assignments");
+            foreach (var write in meshWrites) {
+                // Each assignment uses a single target TextMesh. Find the latest
+                // receiver load even when its formatted text contains other fields.
+                var receiver = showHud.Body.Instructions.TakeWhile(i => i != write).Last(i =>
+                    i.OpCode == OpCodes.Ldfld && ((FieldReference)i.Operand).FieldType.FullName == "UnityEngine.TextMesh");
+                var field = ((FieldReference)receiver.Operand).Name;
+                if (field != "desc_text" && field != "descBig_text")
+                    throw new InvalidOperationException("Unexpected HUD label");
+                var hudIl = showHud.Body.GetILProcessor();
+                hudIl.InsertBefore(write, Instruction.Create(OpCodes.Ldarg_0));
+                hudIl.InsertBefore(write, Instruction.Create(OpCodes.Ldflda, field == "desc_text" ? normalSize : detailSize));
+                write.OpCode = OpCodes.Call;
+                write.Operand = fitHud;
+            }
+            var repaintHud = game.GetType("InfoScript").Methods.Single(m => m.Name == "Repaint");
+            var units = repaintHud.Body.Instructions.Where(i => i.OpCode == OpCodes.Ldstr &&
+                ((string)i.Operand == "Т." || (string)i.Operand == "М.")).ToArray();
+            if (units.Length != 5) throw new InvalidOperationException("Unexpected HUD abbreviations");
+            foreach (var unit in units)
+                repaintHud.Body.GetILProcessor().InsertAfter(unit, Instruction.Create(OpCodes.Call, thousands));
+            var mystical = game.GetType("MysticalScript").Methods.Single(m => m.Name == "GetEventAnswers");
+            foreach (int cost in new int[] { 500, 200 }) {
+                var prefix = mystical.Body.Instructions.Single(i => i.OpCode == OpCodes.Ldstr &&
+                    (string)i.Operand == "{1}: -100{0}{2}{0}{3}: -" + cost);
+                var format = mystical.Body.Instructions.SkipWhile(i => i != prefix)
+                    .First(i => i.OpCode == OpCodes.Call && ((MethodReference)i.Operand).Name == "Format");
+                if (format.Next.OpCode != OpCodes.Stelem_Ref)
+                    throw new InvalidOperationException("Unexpected event 563 tooltip assignment");
+                var fundingIl = mystical.Body.GetILProcessor();
+                var write = format.Next;
+                fundingIl.InsertBefore(write, Instruction.Create(OpCodes.Ldarg_0));
+                fundingIl.InsertBefore(write, Instruction.Create(OpCodes.Ldc_I4, cost));
+                fundingIl.InsertBefore(write, Instruction.Create(OpCodes.Call, funding));
+            }
             var settings = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "SettingsValue"));
             PatchSettingsLabel(game, "LanguageSwitchScript", 1, settings);
             PatchSettingsLabel(game, "OldNamesSwitchScript", 2, settings);

@@ -91,6 +91,13 @@ def audit(tables):
                 hard['blank_shift'].append(ref)
             if re.search(r'[{}]',FORMAT.sub('',zh)):
                 hard['broken_format'].append(ref)
+            # These rows are arguments to an outer String.Format, which does
+            # not expand fields inside its arguments. Players see the braces.
+            if key == 'event_text' and line in (2831, 5364, 5379, 5394, 5403, 5414, 5426, 5436):
+                if FORMAT.search(zh):
+                    hard['unexpanded_event_hint'].append(ref)
+            if '{0}' in zh and '{0}' not in en and '{0}' not in ru:
+                candidates['extra_zero_field'].append(ref)
             if field_set(en)!=field_set(zh):
                 hard['format_ids_or_specifiers'].append(ref)
             if not rich_ok(zh):

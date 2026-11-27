@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace UnityEngine
 {
+    public enum SystemLanguage { English, Russian }
     public struct Vector3
     {
         public float x, y, z;
@@ -34,6 +35,7 @@ namespace UnityEngine
     public class TextMesh : GameObject
     {
         public string text = "";
+        public float characterSize = 1f;
         public float visualHeight;
         public bool richText = true;
         public TextMesh() { renderer = new Renderer(this); }
@@ -45,7 +47,7 @@ namespace UnityEngine
         public Renderer(GameObject owner, float width=0) { this.owner=owner; fixedWidth=width; }
         public Bounds bounds { get {
             TextMesh text = owner as TextMesh;
-            float width = text == null ? fixedWidth : text.text.Sum(c => c=='i' ? .07f : c=='W' ? .30f : .17f);
+            float width = text == null ? fixedWidth : text.characterSize * text.text.Sum(c => c=='i' ? .07f : c=='W' ? .30f : .17f);
             float start = owner.transform.position.x;
             float bottom = owner.transform.position.y - (text == null ? 0f : text.visualHeight);
             return new Bounds { min=new Vector3(start,bottom,0), max=new Vector3(start+width,0,0), size=new Vector3(width,0,0) };
@@ -58,6 +60,14 @@ class SaveLocalController { public Slot save; public TextMesh text; }
 class SaveController { public TextMesh text; public SaveLocalController[] saveLocalControllers; }
 class Mod { public int type; }
 class ModManager { public static ModManager inst; public int loadedMod; public List<Mod> mods; }
+class Minister { public int owner; }
+class GameState { public int party; public Minister[] ministers = new Minister[14]; }
+class LanguageManager
+{
+    public static LanguageManager inst;
+    public SystemLanguage language;
+    public string[] gui_text = new string[1200];
+}
 class SaveNameTests
 {
     static void Check(bool ok) { if(!ok) throw new Exception("Save name regression"); }
@@ -106,7 +116,47 @@ class SaveNameTests
         Check(SaveNameLayout.ClassicChinese("萨莱蒂安边疆区")=="边疆区");
         Check(SaveNameLayout.ClassicChinese("<b>切尔诺里兹斯卡亚共和国</b>{0}")=="<b>共和国</b>{0}");
         Check(SaveNameLayout.ClassicChinese("萨莱蒂人")=="萨莱蒂人");
+        string zero = "{0}{2} ({1})";
+        string positive = "{0} <color=#99FF73>(+{1})</color>";
+        string negative = "{0} <color=#FF001D>({1})</color>";
+        LanguageManager.inst = new LanguageManager { language = SystemLanguage.English };
+        Check(String.Format(SaveNameLayout.HudChangeFormat(zero), "行政资源", 0, "：25").Contains("上月变化：0"));
+        Check(String.Format(SaveNameLayout.HudChangeFormat(positive), "支持率", 5).EndsWith("<color=#99FF73>+5</color>"));
+        Check(String.Format(SaveNameLayout.HudChangeFormat(negative), "支持率", -5).EndsWith("<color=#FF001D>-5</color>"));
+        Check(SaveNameLayout.HudThousands("М.") == "千" && SaveNameLayout.HudThousands("Т.") == "千");
+        foreach (int raw in new int[] { -38, 0, 38 }) {
+            foreach (int indicator in new int[] { 3, 4, 5, 12 })
+                Check(SaveNameLayout.HudDeltaValue(raw, indicator).Equals(raw));
+            foreach (int indicator in new int[] { 0, 1, 2, 6, 7 })
+                Check(SaveNameLayout.HudDeltaValue(raw, indicator).Equals(raw / 10f));
+        }
+        Check(SaveNameLayout.HudDeltaValue(200000001, 12).Equals(200000001));
+        var tip = new TextMesh();
+        tip.transform.parent = new Transform { sprite = new SpriteRenderer(new GameObject(), 2f) };
+        float templateSize = 0f;
+        SaveNameLayout.SetHudText(tip, "精英阶层支持率　上月变化：+38", ref templateSize);
+        Check(templateSize == 1f && tip.characterSize < 1f && tip.renderer.bounds.size.x <= 1.781f);
+        SaveNameLayout.SetHudText(tip, "对俄关系", ref templateSize);
+        Check(tip.characterSize == 1f);
+        GameState game = new GameState { party = 2 };
+        game.ministers[8] = new Minister { owner = 2 };
+        LanguageManager.inst.gui_text[272] = "文体与教育部";
+        LanguageManager.inst.gui_text[1139] = "公共对话委员会";
+        foreach (int cost in new int[] { 500, 200 }) {
+            game.ministers[8].owner = 2;
+            Check(SaveNameLayout.FundingPreview("old", game, cost) == "文体与教育部预算：−" + cost);
+            game.ministers[8].owner = 1;
+            Check(SaveNameLayout.FundingPreview("old", game, cost) == "公共对话委员会预算：−" + cost);
+        }
+        LanguageManager.inst.language = SystemLanguage.Russian;
+        Check(SaveNameLayout.HudChangeFormat(zero) == zero && SaveNameLayout.HudThousands("М.") == "М.");
+        Check(SaveNameLayout.FundingPreview("старый", game, 500) == "старый");
+        Check(SaveNameLayout.HudDeltaValue(38, 12).Equals(3.8f));
+        LanguageManager.inst.language = SystemLanguage.English;
         ModManager.inst=new ModManager{loadedMod=0,mods=new List<Mod>{new Mod{type=2}}};
+        Check(SaveNameLayout.HudChangeFormat(zero) == zero && SaveNameLayout.HudThousands("Т.") == "Т.");
+        Check(SaveNameLayout.FundingPreview("mod", game, 500) == "mod");
+        Check(SaveNameLayout.HudDeltaValue(-38, 3).Equals(-3.8f));
         Check(SaveNameLayout.SettingsValue("English")=="English");
         Check(SaveNameLayout.ClassicChinese("萨莱蒂安边疆区")=="萨莱蒂安边疆区");
     }

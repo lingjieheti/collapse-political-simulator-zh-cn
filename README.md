@@ -6,9 +6,9 @@
 
 首次安装如缺少社区翻译底包，请保持 Steam 已登录，安装器会请求 Steam 下载。也可手动选择目录。游戏更新后，可点 **核验汉化** 检查当前安装。需要恢复原版时，点击 **还原原版**。
 
-适配 Steam Windows x64 构建 **24949409**。v1.2.5 修复了新游戏选择页的两处裁字。选择党派时，“更多信息”下面的介绍，以及画面下方的剧本说明，现在都能完整显示首行笔画。较长文本滚动至末尾时，最后一行也有独立的显示空间。
+适配 Steam Windows x64 构建 **24949409**。v1.2.6 给顶部指标的增减值标明“上月变化”。事件选项会正确区分两种可能的开支；部门预算未达门槛时，提示会写明“不足所需的一半”。已安装 v1.2.5 的玩家可退出游戏后直接运行新版安装程序。
 
-[党派与剧本首行实机对照](docs/party-description.webp) · [本版复测记录](games/collapse/COMMUNITY-1.2.5.md) · [存档界面](docs/save-names.webp) · [设置页](docs/settings-zh.webp) · [序章标题](docs/prologue-title.webp) · [校对记录](games/collapse/AUDIT.md) · [补丁来源](games/collapse/README.md)
+[悬停提示修前与修后](docs/hover-tooltips.webp) · [本版修订与验证](games/collapse/COMMUNITY-1.2.6.md) · [党派与剧本首行对照](docs/party-description.webp) · [存档界面](docs/save-names.webp) · [设置页](docs/settings-zh.webp) · [校对记录](games/collapse/AUDIT.md) · [补丁来源](games/collapse/README.md)
 
 <details>
 <summary>从源码构建安装程序</summary>

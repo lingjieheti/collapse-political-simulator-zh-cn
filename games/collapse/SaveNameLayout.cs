@@ -130,6 +130,62 @@ internal static class SaveNameLayout
         return native;
     }
 
+    public static bool ChineseHud()
+    {
+        LanguageManager language = LanguageManager.inst;
+        return !System.Object.ReferenceEquals(language, null) &&
+               language.language == SystemLanguage.English && OwnTranslation();
+    }
+
+    public static string HudChangeFormat(string native)
+    {
+        if (!ChineseHud()) return native;
+        // The game finalizes these nine changes on the first day of the month.
+        // Leave the signed value and its original positive/negative color intact.
+        return native.Replace(" ", "　上月变化：").Replace("(", "").Replace(")", "");
+    }
+
+    public static string HudThousands(string native)
+    {
+        // Each compact counter is exactly 1/1000 of its unabridged display.
+        return ChineseHud() ? "千" : native;
+    }
+
+    public static object HudDeltaValue(int raw, int indicator)
+    {
+        // Support is a whole percentage, and state budget is a whole amount.
+        // Party cohesion/resources/budget and foreign relations use tenths.
+        if ((indicator >= 3 && indicator <= 5 || indicator == 12) && ChineseHud())
+            return raw;
+        return raw / 10f;
+    }
+
+    public static void SetHudText(TextMesh label, string text, ref float originalSize)
+    {
+        // Some HUDs sit against the screen edge. Fit just the affected label
+        // inside its own plate, keeping the position and the other HUDs intact.
+        if (originalSize > 0f) label.characterSize = originalSize;
+        label.text = text;
+        if (String.IsNullOrEmpty(text) || text.IndexOf("上月变化：", StringComparison.Ordinal) < 0 ||
+            !ChineseHud() || label.transform.parent == null) return;
+        SpriteRenderer plate = label.transform.parent.GetComponent<SpriteRenderer>();
+        Renderer glyphs = label.GetComponent<Renderer>();
+        if (plate == null || glyphs == null) return;
+        float width = glyphs.bounds.size.x;
+        float available = plate.bounds.size.x - .22f;
+        if (available <= 0f || width <= available) return;
+        if (originalSize == 0f) originalSize = label.characterSize;
+        label.characterSize = originalSize * available / width;
+    }
+
+    public static string FundingPreview(string native, GameState state, int cost)
+    {
+        if (!ChineseHud()) return native;
+        int label = state.ministers[8].owner == (int)state.party ? 272 : 1139;
+        string title = LanguageManager.inst.gui_text[label];
+        return title + "预算：−" + cost.ToString(CultureInfo.InvariantCulture);
+    }
+
     // TransformLine runs only in classic mode. Preserve native format tokens,
     // color tags, and the distinct ethnic name for the Salets.
     public static string ClassicChinese(string line)
