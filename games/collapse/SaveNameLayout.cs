@@ -91,6 +91,21 @@ internal static class SaveNameLayout
         label.text = prefix;
     }
 
+    // Position a new-game description between the two original mask planes.
+    // The origin of this font lies below its tallest Chinese strokes.
+    public static float NewGameScrollY(float fallbackBottom, float maskTop, float k,
+                                       TextMesh text, Material mask)
+    {
+        float top = maskTop - .12f;
+        if (k >= 1f) return top;
+        Renderer renderer = text.GetComponent<Renderer>();
+        float bottom = fallbackBottom;
+        if (renderer != null && mask != null && !String.IsNullOrEmpty(text.text))
+            bottom = Math.Max(top, text.transform.position.y - renderer.bounds.min.y +
+                                  mask.GetFloat("min_y") + .08f);
+        return bottom + (top - bottom) * Math.Max(0f, k);
+    }
+
     // A translation or combined Workshop mod supplies its own naming conventions.
     public static bool OwnTranslation()
     {

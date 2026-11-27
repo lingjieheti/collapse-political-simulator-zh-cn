@@ -15,6 +15,7 @@ namespace UnityEngine
         public static Vector3 operator +(Vector3 a, Vector3 b) { return new Vector3(a.x+b.x,a.y+b.y,a.z+b.z); }
     }
     public struct Bounds { public Vector3 min, max, size; }
+    public class Material { public float lower; public float GetFloat(string field) { return lower; } }
     public class Transform
     {
         public Vector3 position;
@@ -33,6 +34,7 @@ namespace UnityEngine
     public class TextMesh : GameObject
     {
         public string text = "";
+        public float visualHeight;
         public bool richText = true;
         public TextMesh() { renderer = new Renderer(this); }
     }
@@ -45,7 +47,8 @@ namespace UnityEngine
             TextMesh text = owner as TextMesh;
             float width = text == null ? fixedWidth : text.text.Sum(c => c=='i' ? .07f : c=='W' ? .30f : .17f);
             float start = owner.transform.position.x;
-            return new Bounds { min=new Vector3(start,0,0), max=new Vector3(start+width,0,0), size=new Vector3(width,0,0) };
+            float bottom = owner.transform.position.y - (text == null ? 0f : text.visualHeight);
+            return new Bounds { min=new Vector3(start,bottom,0), max=new Vector3(start+width,0,0), size=new Vector3(width,0,0) };
         }}
     }
     public class SpriteRenderer : Renderer { public SpriteRenderer(GameObject obj,float width):base(obj,width){} }
@@ -60,6 +63,17 @@ class SaveNameTests
     static void Check(bool ok) { if(!ok) throw new Exception("Save name regression"); }
     static void Main()
     {
+        var paragraph = new TextMesh { text="正文", visualHeight=4f };
+        var mask = new Material { lower=0f };
+        const float top=2.12f, previousBottom=9f;
+        foreach (var origin in new[]{-3f,0f,7f}) {
+            paragraph.transform.position=new Vector3(0f,origin,0f);
+            Check(Math.Abs(SaveNameLayout.NewGameScrollY(previousBottom,top,1f,paragraph,mask)-2f)<.0001f);
+            Check(Math.Abs(SaveNameLayout.NewGameScrollY(previousBottom,top,.5f,paragraph,mask)-3.04f)<.0001f);
+            Check(Math.Abs(SaveNameLayout.NewGameScrollY(previousBottom,top,0f,paragraph,mask)-4.08f)<.0001f);
+        }
+        paragraph.visualHeight=.5f;
+        Check(Math.Abs(SaveNameLayout.NewGameScrollY(previousBottom,top,0f,paragraph,mask)-2f)<.0001f);
         var name=new TextMesh(); var date=new TextMesh(); date.transform.position=new Vector3(2.5f,0,0);
         foreach(var full in new[]{"May14",new string('i',28),"", "<b>X</b>"}) {
             SaveNameLayout.SetRow(name,full,date); Check(name.text==full && !name.richText);

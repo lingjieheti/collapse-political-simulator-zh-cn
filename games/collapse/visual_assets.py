@@ -38,7 +38,8 @@ MESH_SIZES = {
     'level2': ((.09, .058, (283,)),),  # auto-resume in the settings grid
     'level4': (
         (.14, .112, (162, 165, 167, 168, 170)),  # five difficulty buttons
-        (.06, .05, (171, 172)),  # additional info and Last Hero
+        (.06, .045, (171,)),  # allow more room above and below More Information
+        (.06, .05, (172,)),   # Last Hero
     ),
     'level5': ((.12, .10, (988,)),),  # pause menu: save game
     'level6': (
@@ -72,6 +73,7 @@ MESH_SIZES = {
 # captions in their 0.171-world-unit rows. Values are local to each parent.
 TRANSFORM_Y = {
     'level2': ((1.03, .76, (145,)),),
+    'level4': ((-1.447, -.195, (97,)),),  # keep the party text above its five portrait buttons
     'level6': ((.482, 1.08, (206,)),),
     'level13': ((-.10, -.035, (354, 358, 400, 403, 436, 452, 505, 511, 536,
                                537, 585, 620, 629, 639, 663, 683)),),

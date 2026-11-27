@@ -9,7 +9,7 @@ import zipfile
 HERE = Path(__file__).resolve().parent
 FILE = 'Managed/Assembly-CSharp.dll'
 ORIGINAL = 'b421226acdfd29f27f64758378b0ab94af76f89566d9ad1e9280df913c8646ef'
-PATCHED = 'b4a5538ff6cfefba9efa14c01d96ed36b79ce2410f03b206a4ae577f27c53ece'
+PATCHED = '61ade2b26a15a6b6c514094d07055471322624068921c8ec3dd9ad7886455adb'
 CECIL = 'd2a23832aaa948ba9a01acc42b5726e34c5f995958f1b30d45c0e7c70b3a72d5'
 
 

@@ -78,6 +78,23 @@ static class BuildSaveNameLayout
         }
     }
 
+    static void SetScrollLayout(TypeDefinition controller, string method, string textField,
+                                string materialField, MethodDefinition layout)
+    {
+        var repaint = controller.Methods.Single(m => m.Name == method);
+        var lerp = repaint.Body.Instructions.Single(i => i.OpCode == OpCodes.Call &&
+            ((MethodReference)i.Operand).FullName ==
+                "System.Single Utils::Lerp(System.Single,System.Single,System.Single)");
+        var il = repaint.Body.GetILProcessor();
+        var text = controller.Fields.Single(f => f.Name == textField);
+        var material = controller.Fields.Single(f => f.Name == materialField);
+        il.InsertBefore(lerp, Instruction.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(lerp, Instruction.Create(OpCodes.Ldfld, text));
+        il.InsertBefore(lerp, Instruction.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(lerp, Instruction.Create(OpCodes.Ldfld, material));
+        lerp.Operand = layout;
+    }
+
     static void Main(string[] args)
     {
         using (var resolver = new DefaultAssemblyResolver()) {
@@ -149,6 +166,10 @@ static class BuildSaveNameLayout
             var originalText = transform.Body.Instructions.Single(i => i.OpCode == OpCodes.Stfld &&
                 ((FieldReference)i.Operand).Name == "s" && i.Previous.OpCode == OpCodes.Ldarg_1);
             transform.Body.GetILProcessor().InsertBefore(originalText, Instruction.Create(OpCodes.Call, classic));
+            var newGame = game.GetType("GameSelectController");
+            var scrollLayout = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "NewGameScrollY"));
+            SetScrollLayout(newGame, "UpdateTextPosition", "scenario_desc", "fontMaterial", scrollLayout);
+            SetScrollLayout(newGame, "UpdateTextPosition2", "party_desc", "fontMaterial2", scrollLayout);
             assembly.Write(args[2], new WriterParameters { Timestamp = 0 });
         }
         }

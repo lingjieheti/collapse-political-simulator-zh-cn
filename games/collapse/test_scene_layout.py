@@ -112,6 +112,15 @@ class SceneLayoutTests(unittest.TestCase):
         self.assertLess(6 * 12 * .45 * size_for('level13', 1135), 2.62 - .20)
         self.assertLess(12 * .45 * size_for('level13', 1158), .171)
 
+    def test_new_game_text_clears_the_portrait_buttons(self):
+        # The card's lower clipping plane is a child of the white panel. At
+        # 1080p its new position is above the five portraits (native y=574).
+        local = next(new for _, new, ids in visual.TRANSFORM_Y['level4'] if 97 in ids)
+        lower_world = local + .00923
+        self.assertGreater(574 - (540 - lower_world * 108), 12)
+        self.assertEqual(size_for('level4', 171), .045)
+        self.assertEqual(size_for('level4', 172), .05)
+
     def test_rolling_digits_stay_separate_at_both_resolutions(self):
         self.assertEqual(len(set(visual.DATE_DIGITS)), 3 * 8)
         # At 90 points, 0.09 characterSize, the digit with the largest ink
