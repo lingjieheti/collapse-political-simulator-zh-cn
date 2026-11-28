@@ -138,6 +138,28 @@ def load_edits():
         out[key][num] = value
     return out
 
+def load_guide_sections():
+    sections = {}
+    path = Path(__file__).with_name('guide_sections.tsv')
+    for line in path.read_text('utf-8').splitlines():
+        row, section, value = line.split('\t')
+        row, section = int(row), int(section)
+        entries = sections.setdefault(row, {})
+        require(0 < row <= TABLES['system_text'][2] and section >= 0 and section not in entries,
+                '手册段落位置无效')
+        require(all(part.strip() for part in value.split('||')), '手册段落内容为空')
+        entries[section] = value
+    return sections
+
+def revise_guides(rows, revisions):
+    # Positions are relative to the pinned Workshop text before any added paragraph breaks.
+    for row, entries in revisions.items():
+        parts = rows[row - 1].split('||')
+        for section, value in entries.items():
+            require(section < len(parts), f'未找到手册第 {row} 行第 {section + 1} 段')
+            parts[section] = value
+        rows[row - 1] = '||'.join(parts)
+
 # Game text uses {0} for soft line breaks on many panels, and numbered fields for
 # actual substitutions. Keep both intact. Short labels fit without inter-character
 # spaces; retain the word-wrap opportunities in long community narrative paragraphs.
@@ -154,6 +176,17 @@ SPACED_NAMES = {
                            'M i k u l a s   D z u r i n d a': 'Mikulas Dzurinda'},
     ('system_text', 1310): {'r e s   p u b l i c a': 'res publica'},
 }
+
+FICTIONAL_NATIONAL_PARTY = re.compile(
+    r"\b(?:PNP|NPP|NNP|People's National|National People's|national[- ]populists?)\b|"
+    r"<color=#780200>LNP</color>", re.I)
+
+def party_name(line, original):
+    if '国' not in line or not FICTIONAL_NATIONAL_PARTY.search(original):
+        return line
+    if re.search(r'Kuomintang|Guomindang|\bKMT\b', original, re.I):
+        return line
+    return re.sub(r'(?:共\s*和\s*国\s*)?国\s*民\s*党', '国家人民党', line)
 
 def clean_line(key, num, old, original):
     if key == 'credits_text':
@@ -246,7 +279,9 @@ def build(pristine, upstream):
         base = source.decode('utf-8-sig').splitlines()
         require(len(orig) == len(base) == count, f'行数不匹配：{key}')
         rows = [edits[key][n] if n in edits[key] else clean_line(key,n,t,orig[n-1]) for n,t in enumerate(base,1)]
-        rows = [wrap_chinese(row) for row in rows]
+        if key == 'system_text':
+            revise_guides(rows, load_guide_sections())
+        rows = [wrap_chinese(party_name(row, original)) for row, original in zip(rows, orig)]
         require(all(bool(a.strip()) == bool(b.strip()) for a,b in zip(base,rows)), f'空行结构改变：{key}')
         text = ('\n'.join(rows) + ('\n' if eng.endswith(b'\n') else '')).encode()
         summary[key] = (count, sum(a != b for a,b in zip(base,rows)))

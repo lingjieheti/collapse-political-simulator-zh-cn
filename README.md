@@ -6,9 +6,9 @@
 
 首次安装如缺少社区翻译底包，请保持 Steam 已登录，安装器会请求 Steam 下载。也可手动选择目录。游戏更新后，可点 **核验汉化** 检查当前安装。需要恢复原版时，点击 **还原原版**。
 
-适配 Steam Windows x64 构建 **24949409**。v1.2.6 给顶部指标的增减值标明“上月变化”。事件选项会正确区分两种可能的开支；部门预算未达门槛时，提示会写明“不足所需的一半”。已安装 v1.2.5 的玩家可退出游戏后直接运行新版安装程序。
+适配 Steam Windows x64 构建 **24949409**。v1.2.7 更正了西方基金会的阶层效果说明、部委决策的开启条件提示，以及部分竞选承诺的目标方向。多处事件中写错的国家、组织和人物也已校正。已安装旧版的玩家可退出游戏后直接升级。
 
-[悬停提示修前与修后](docs/hover-tooltips.webp) · [本版修订与验证](games/collapse/COMMUNITY-1.2.6.md) · [党派与剧本首行对照](docs/party-description.webp) · [存档界面](docs/save-names.webp) · [设置页](docs/settings-zh.webp) · [校对记录](games/collapse/AUDIT.md) · [补丁来源](games/collapse/README.md)
+[西方基金会修订前后对照](docs/foundation-policy.webp) · [本版修订与验证](games/collapse/COMMUNITY-1.2.7.md) · [顶部悬停提示](docs/hover-tooltips.webp) · [党派与剧本首行对照](docs/party-description.webp) · [存档界面](docs/save-names.webp) · [设置页](docs/settings-zh.webp) · [校对记录](games/collapse/AUDIT.md) · [补丁来源](games/collapse/README.md)
 
 <details>
 <summary>从源码构建安装程序</summary>

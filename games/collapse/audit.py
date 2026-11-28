@@ -17,6 +17,22 @@ FORMAT = re.compile(r'\{\s*(\d+)\s*(?::([^{}]*))?\}')
 TAG = re.compile(r'<(/?)(color|b|i|size)(?:=[^<>]+)?\s*>',re.I)
 CJK = re.compile(r'[\u3400-\u9fff]')
 
+# Short source abbreviations can name both a country and a faction.
+# Only treat an unambiguous long name in both source languages as a review lead.
+ENTITIES = (
+    (r'\b(?:China|People.s Republic of China)\b', r'Кита[йеяю]|КНР', r'中国|中华|中方|北京|大陆|俄中|中俄|中美|美中'),
+    (r'\bHong Kong\b', r'Гонконг', r'香港|港澳'),
+    (r'\bMacau\b|\bMacao\b', r'Макао', r'澳门|港澳'),
+    (r'\bRussian Federation\b', r'Российск\w* Федерац', r'俄|莫斯科'),
+    (r'\bUnited States\b', r'Соедин[её]нн\w* Штат|США', r'美|华盛顿'),
+    (r'\bCommonwealth of Independent States\b', r'Содружеств\w* Независим\w* Государств|СНГ', r'独联体|独立国家联合体'),
+)
+
+def missing_entity(en, ru, zh):
+    target = compact(zh)
+    return any(re.search(e, en, re.I) and re.search(r, ru, re.I) and not re.search(z, target)
+               for e, r, z in ENTITIES)
+
 def read_tables(game, workshop):
     source = game/collapse.ASSET
     pristine = source.read_bytes()
@@ -76,6 +92,8 @@ def audit(tables):
         groups = defaultdict(list)
         for line,(en,ru,base,zh) in enumerate(rows,1):
             ref=(key,line)
+            if missing_entity(en, ru, zh):
+                candidates['named_entity'].append(ref)
             # The same character trait appears in the ballot, the nomination
             # report's format argument and the officeholder's tooltip.
             if key == 'event_text':
@@ -96,10 +114,17 @@ def audit(tables):
             if key == 'event_text' and line in (2831, 5364, 5379, 5394, 5403, 5414, 5426, 5436):
                 if FORMAT.search(zh):
                     hard['unexpanded_event_hint'].append(ref)
-            if '{0}' in zh and '{0}' not in en and '{0}' not in ru:
-                candidates['extra_zero_field'].append(ref)
-            if field_set(en)!=field_set(zh):
-                hard['format_ids_or_specifiers'].append(ref)
+            # The Chinese coalition formatter embeds these two fragments in its
+            # outer format string: {0} is a regional change, {5} is the party grant.
+            if key == 'gui_text' and line in (1761, 1762):
+                expected = [('5',''), ('0','')] if line == 1761 else [('0','')]
+                if FORMAT.findall(zh) != expected:
+                    hard['coalition_format_fields'].append(ref)
+            else:
+                if '{0}' in zh and '{0}' not in en and '{0}' not in ru:
+                    candidates['extra_zero_field'].append(ref)
+                if field_set(en)!=field_set(zh):
+                    hard['format_ids_or_specifiers'].append(ref)
             if not rich_ok(zh):
                 hard['rich_text_nesting'].append(ref)
             if en.strip() and not zh.strip():

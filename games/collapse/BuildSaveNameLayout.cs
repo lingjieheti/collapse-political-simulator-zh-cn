@@ -95,6 +95,67 @@ static class BuildSaveNameLayout
         lerp.Operand = layout;
     }
 
+    static void PatchEconomicTooltips(ModuleDefinition game, MethodDefinition threshold, MethodDefinition relation)
+    {
+        var desc = game.GetType("LanguageManager").Methods.Single(m => m.Name == "GetModificatorDesc");
+        var p = desc.Body.Instructions;
+        int key = p.IndexOf(p.Single(i => i.OpCode == OpCodes.Ldc_I4 && (int)i.Operand == 1328));
+        // system_text[1328 + num - 137], average / 10f, modifies[num].
+        if (p[key-1].OpCode != OpCodes.Ldfld || ((FieldReference)p[key-1].Operand).Name != "system_text" ||
+            p[key+1].OpCode != OpCodes.Ldarg_1 || p[key+2].OpCode != OpCodes.Add ||
+            p[key+3].OpCode != OpCodes.Ldc_I4 || (int)p[key+3].Operand != 137 ||
+            p[key+4].OpCode != OpCodes.Sub || p[key+5].OpCode != OpCodes.Ldelem_Ref ||
+            p[key+7].OpCode != OpCodes.Conv_R4 || p[key+8].OpCode != OpCodes.Ldc_R4 ||
+            (float)p[key+8].Operand != 10f || p[key+9].OpCode != OpCodes.Div ||
+            p[key+10].OpCode != OpCodes.Box || ((TypeReference)p[key+10].Operand).FullName != "System.Single" ||
+            p[key+12].OpCode != OpCodes.Ldfld || ((FieldReference)p[key+12].Operand).FullName != "System.Int32[] GameState::modifies" ||
+            p[key+13].OpCode != OpCodes.Ldarg_1 || p[key+14].OpCode != OpCodes.Ldelem_I4 ||
+            p[key+15].OpCode != OpCodes.Box || ((TypeReference)p[key+15].Operand).FullName != "System.Int32" ||
+            p[key+16].OpCode != OpCodes.Call || ((MethodReference)p[key+16].Operand).FullName !=
+            "System.String System.String::Format(System.String,System.Object,System.Object)" || p[key+17].OpCode != OpCodes.Ret)
+            throw new InvalidOperationException("Unexpected election pledge display");
+        p[key+15].OpCode = OpCodes.Call;
+        p[key+15].Operand = threshold;
+
+        var preview = game.GetType("RegionWindowController").Methods.Single(m => m.Name == "ClickEffectsSuffix");
+        p = preview.Body.Instructions;
+        key = p.IndexOf(p.Single(i => i.OpCode == OpCodes.Ldc_I4 && (int)i.Operand == 2750));
+        // Verify the Budget +150 line and its neighboring faction relation preview.
+        if (p[key-10].OpCode != OpCodes.Ldc_I4 || (int)p[key-10].Operand != 2749 ||
+            p[key-9].OpCode != OpCodes.Ldelem_Ref || p[key-8].OpCode != OpCodes.Ldc_I4 ||
+            (int)p[key-8].Operand != 150 || p[key-7].OpCode != OpCodes.Ldc_I4_0 ||
+            p[key-6].OpCode != OpCodes.Ldc_I4_1 || p[key-5].OpCode != OpCodes.Ldnull ||
+            p[key-4].OpCode != OpCodes.Call || p[key-1].OpCode != OpCodes.Ldfld ||
+            ((FieldReference)p[key-1].Operand).Name != "gui_text" || p[key+1].OpCode != OpCodes.Ldelem_Ref ||
+            p[key+2].OpCode != OpCodes.Ldc_I4_5 || p[key+3].OpCode != OpCodes.Ldc_I4_1 ||
+            p[key+4].OpCode != OpCodes.Ldc_I4_1 || p[key+5].OpCode != OpCodes.Ldnull ||
+            p[key+6].OpCode != OpCodes.Call || p[key-4].Operand != p[key+6].Operand ||
+            !((MethodReference)p[key+6].Operand).Name.StartsWith("<ClickEffectsSuffix>g__Add|"))
+            throw new InvalidOperationException("Unexpected business development display");
+        preview.Body.GetILProcessor().InsertAfter(p[key+2], Instruction.Create(OpCodes.Call, relation));
+    }
+
+    static void PatchCoalitionTemplate(ModuleDefinition game, MethodDefinition formatter)
+    {
+        var method = game.GetType("LanguageManager").Methods.Single(m => m.Name == "GetModificatorDesc");
+        var code = method.Body.Instructions;
+        var regionalLabel = code.Single(i => i.OpCode == OpCodes.Ldc_I4 && (int)i.Operand == 1727);
+        var firstFormat = code.Skip(code.IndexOf(regionalLabel)).First(i => i.OpCode == OpCodes.Call);
+        int k = code.IndexOf(firstFormat);
+        if (((MethodReference)firstFormat.Operand).FullName != "System.String System.String::Format(System.String,System.Object[])" ||
+            code[k+1].OpCode != OpCodes.Ret || code[k+2].OpCode != OpCodes.Ldarg_0 ||
+            code[k+3].OpCode != OpCodes.Ldfld || ((FieldReference)code[k+3].Operand).Name != "gui_text" ||
+            code[k+4].OpCode != OpCodes.Ldloc_S || code[k+5].OpCode != OpCodes.Ldelem_Ref ||
+            code[k+6].OpCode != OpCodes.Ldc_I4_6 || code[k+7].OpCode != OpCodes.Newarr ||
+            ((TypeReference)code[k+7].Operand).FullName != "System.Object" ||
+            method.Body.Variables[0].VariableType.FullName != "GameState")
+            throw new InvalidOperationException("Unexpected coalition tooltip branches");
+        var fillArgs = code[k+6];
+        var il = method.Body.GetILProcessor();
+        il.InsertBefore(fillArgs, Instruction.Create(OpCodes.Ldloc_0));
+        il.InsertBefore(fillArgs, Instruction.Create(OpCodes.Call, formatter));
+    }
+
     static void Main(string[] args)
     {
         using (var resolver = new DefaultAssemblyResolver()) {
@@ -159,6 +220,11 @@ static class BuildSaveNameLayout
 
             CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "OwnTranslation"));
             CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "ChineseHud"));
+            var threshold = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "PledgeThreshold"));
+            var relation = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "BusinessProjectRelation"));
+            PatchEconomicTooltips(game, threshold, relation);
+            var coalition = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "CoalitionTemplate"));
+            PatchCoalitionTemplate(game, coalition);
             var hudChange = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "HudChangeFormat"));
             var thousands = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "HudThousands"));
             var deltaValue = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "HudDeltaValue"));

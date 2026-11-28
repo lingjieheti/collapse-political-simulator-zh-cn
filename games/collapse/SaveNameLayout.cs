@@ -137,6 +137,33 @@ internal static class SaveNameLayout
                language.language == SystemLanguage.English && OwnTranslation();
     }
 
+    public static object PledgeThreshold(int raw)
+    {
+        if (ChineseHud()) return raw / 10f;
+        return raw;
+    }
+
+    public static int BusinessProjectRelation(int originalPreview)
+    {
+        // The project adds 50 internal tenths. The native tooltip divides by ten.
+        return ChineseHud() ? 50 : originalPreview;
+    }
+
+    public static string CoalitionTemplate(string native, GameState state)
+    {
+        if (!ChineseHud()) return native;
+        int ally = state.modifies[133] - 1;
+        if (ally < 0 || ally >= 7 || state.modifies[9 + ally] == 0 ||
+            state.modifies[9 + (int)state.party] != 0) return native;
+        int divider = native.IndexOf("||", StringComparison.Ordinal);
+        if (divider < 0) return native;
+        // Preserve the ally's local party effects. Replace the paragraph about
+        // our wing with the matching treasury and regional effects. The game's
+        // original String.Format supplies both its own class value and index 0.
+        string[] gui = LanguageManager.inst.gui_text;
+        return native.Substring(0, divider) + "||" + gui[1760] + "|" + gui[1761];
+    }
+
     public static string HudChangeFormat(string native)
     {
         if (!ChineseHud()) return native;

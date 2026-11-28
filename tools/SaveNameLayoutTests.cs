@@ -61,12 +61,12 @@ class SaveController { public TextMesh text; public SaveLocalController[] saveLo
 class Mod { public int type; }
 class ModManager { public static ModManager inst; public int loadedMod; public List<Mod> mods; }
 class Minister { public int owner; }
-class GameState { public int party; public Minister[] ministers = new Minister[14]; }
+class GameState { public int party; public int[] modifies = new int[141]; public Minister[] ministers = new Minister[14]; }
 class LanguageManager
 {
     public static LanguageManager inst;
     public SystemLanguage language;
-    public string[] gui_text = new string[1200];
+    public string[] gui_text = new string[1800];
 }
 class SaveNameTests
 {
@@ -140,6 +140,23 @@ class SaveNameTests
         Check(tip.characterSize == 1f);
         GameState game = new GameState { party = 2 };
         game.ministers[8] = new Minister { owner = 2 };
+        foreach (var raw in new[] { 0, 1, 99, 500, 527, 1000 })
+            Check(SaveNameLayout.PledgeThreshold(raw).Equals(raw / 10f));
+        Check(SaveNameLayout.BusinessProjectRelation(5) / 10f == 5f);
+        const string neutral = "local {2}||standard {3} {4} {5}";
+        LanguageManager.inst.gui_text[1760] = "treasury +{5}|upper aggression +{0}";
+        LanguageManager.inst.gui_text[1761] = "funds after grant > 0 AND administration > 0: lower needs +{0}; otherwise no gain";
+        game.modifies[133] = 6;
+        game.modifies[9 + 5] = 1;
+        string regional = SaveNameLayout.CoalitionTemplate(neutral, game);
+        Check(string.Format(System.Globalization.CultureInfo.InvariantCulture, regional, 1.2f, 2.6f, 0.4f, "x", "y", 2.6f)
+              == "local 0.4||treasury +2.6|upper aggression +1.2|funds after grant > 0 AND administration > 0: lower needs +1.2; otherwise no gain");
+        game.modifies[9 + game.party] = 1;
+        Check(SaveNameLayout.CoalitionTemplate(neutral, game) == neutral);
+        game.modifies[9 + game.party] = 0;
+        game.modifies[9 + 5] = 0;
+        Check(SaveNameLayout.CoalitionTemplate(neutral, game) == neutral);
+        game.modifies[9 + 5] = 1;
         LanguageManager.inst.gui_text[272] = "文体与教育部";
         LanguageManager.inst.gui_text[1139] = "公共对话委员会";
         foreach (int cost in new int[] { 500, 200 }) {
@@ -149,11 +166,17 @@ class SaveNameTests
             Check(SaveNameLayout.FundingPreview("old", game, cost) == "公共对话委员会预算：−" + cost);
         }
         LanguageManager.inst.language = SystemLanguage.Russian;
+        Check(SaveNameLayout.CoalitionTemplate(neutral, game) == neutral);
+        Check(SaveNameLayout.PledgeThreshold(527).Equals(527));
+        Check(SaveNameLayout.BusinessProjectRelation(5) == 5);
         Check(SaveNameLayout.HudChangeFormat(zero) == zero && SaveNameLayout.HudThousands("М.") == "М.");
         Check(SaveNameLayout.FundingPreview("старый", game, 500) == "старый");
         Check(SaveNameLayout.HudDeltaValue(38, 12).Equals(3.8f));
         LanguageManager.inst.language = SystemLanguage.English;
         ModManager.inst=new ModManager{loadedMod=0,mods=new List<Mod>{new Mod{type=2}}};
+        Check(SaveNameLayout.CoalitionTemplate(neutral, game) == neutral);
+        Check(SaveNameLayout.PledgeThreshold(527).Equals(527));
+        Check(SaveNameLayout.BusinessProjectRelation(5) == 5);
         Check(SaveNameLayout.HudChangeFormat(zero) == zero && SaveNameLayout.HudThousands("Т.") == "Т.");
         Check(SaveNameLayout.FundingPreview("mod", game, 500) == "mod");
         Check(SaveNameLayout.HudDeltaValue(-38, 3).Equals(-3.8f));
