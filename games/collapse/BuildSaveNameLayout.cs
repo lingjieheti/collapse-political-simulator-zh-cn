@@ -519,6 +519,7 @@ static partial class BuildSaveNameLayout
             SetScrollLayout(newGame, "UpdateTextPosition2", "party_desc", "fontMaterial2", scrollLayout);
             PatchDiplomacy(game, source, helpers);
             PatchVoting(game, source, helpers);
+            PatchAdjacentHeader(game, source, helpers);
             PatchCurrencyTooltip(game, source, helpers);
             PatchMysticalIntro(game);
             PatchCampaignVacancies(game);

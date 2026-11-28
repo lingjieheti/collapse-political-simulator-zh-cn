@@ -221,8 +221,13 @@ class SaveNameTests
         Check(builder.Contains("PatchEndingLayout(game, source, helpers);"));
         Check(builder.Contains("game.GetType(\"EndingController\")"));
         Check(builder.Contains("PatchIraqEvent(game);"));
+        Check(builder.Contains("PatchAdjacentHeader(game, source, helpers);"));
         foreach (string name in new[] { "ApplyEndingLayout", "SetEndingVisibleLines", "EndingTextTop" })
             Check(builder.Contains("source.Methods.Single(m => m.Name == \"" + name + "\")"));
+
+        string factionBuilder = System.IO.File.ReadAllText(System.IO.Path.Combine(repo, "games", "collapse", "BuildVotingPanel.cs"));
+        Check(factionBuilder.Contains("add(\"FitFactionListRow\")") && factionBuilder.Contains("Instruction.Create(OpCodes.Call, rowLayout)"));
+        Check(factionBuilder.Contains("add(\"FitFactionHeader\")") && factionBuilder.Contains("il.Emit(OpCodes.Call, headerLayout)"));
 
         string game = Environment.GetEnvironmentVariable("COLLAPSE_TEST_GAME");
         if (String.IsNullOrEmpty(game)) return;
@@ -236,6 +241,7 @@ class SaveNameTests
         AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += resolve;
         try {
             IraqEventTemplates(asm);
+            FactionPanelHooks(asm);
             var ending = asm.GetType("EndingController", true);
             var helper = asm.GetType("SaveNameLayout", true);
             var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
@@ -254,6 +260,50 @@ class SaveNameTests
             Check(Enumerable.Range(0, awake.Length - top.Length + 1).Count(i => awake.Skip(i).Take(top.Length).SequenceEqual(top)) == 1);
         }
         finally { AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= resolve; }
+    }
+
+    static void FactionPanelHooks(System.Reflection.Assembly game)
+    {
+        var flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance;
+        var faction = game.GetType("FactionController", true);
+        var helper = game.GetType("SaveNameLayout", true);
+        // The controller has separate returns for regular factions and research.
+        // Each drawn row must be assigned its original ID before our display call.
+        foreach (bool entering in new[]{true,false}) {
+            string name = entering ? "IButtonPressReceiver.OnButtonEnter" : "IButtonPressReceiver.OnButtonExit";
+            var call = EndingInstruction(0x28, helper.GetMethod("SetFactionActionHover"));
+            byte[] expected = new byte[]{ 0x02, 0x03, entering ? (byte)0x17 : (byte)0x16 }.Concat(call).ToArray();
+            byte[] body = faction.GetMethod(name, flags).GetMethodBody().GetILAsByteArray();
+            Check(body.Take(expected.Length).SequenceEqual(expected));
+        }
+        byte[] popup = faction.GetMethod("TryShowStructuredTooltip", flags).GetMethodBody().GetILAsByteArray();
+        var clean = EndingInstruction(0x28, helper.GetMethod("DiplomacyPunctuation"));
+        Check(Enumerable.Range(0, popup.Length - clean.Length).Count(i =>
+            popup[i + clean.Length] == 0x6f && popup.Skip(i).Take(clean.Length).SequenceEqual(clean)) == 1);
+        var buttonId = game.GetType("GenericButtonPressScript", true).GetField("num");
+        byte[] row = faction.GetMethod("SetObject", flags).GetMethodBody().GetILAsByteArray();
+        var assign = EndingInstruction(0x7d, buttonId);
+        var visualState = EndingInstruction(0x7c, faction.GetField("zhFactionLayoutSeen", flags));
+        var fitRow = new byte[]{ 0x02, 0x04, 0x02 }.Concat(visualState).Concat(EndingInstruction(0x28, helper.GetMethod("FitFactionListRow"))).Concat(new byte[]{0x2a}).ToArray();
+        Check(row.Skip(7).Take(assign.Length).SequenceEqual(assign));
+        Check(Enumerable.Range(0, row.Length - fitRow.Length + 1).Count(i => row.Skip(i).Take(fitRow.Length).SequenceEqual(fitRow)) == 2);
+
+        foreach (string name in new[]{"MinistryController","PartyController"}) {
+            var panel = game.GetType(name,true);
+            var text = EndingInstruction(0x7b, panel.GetField("info_text",flags));
+            var sizes = EndingInstruction(0x7c, panel.GetField("zhStripNativeSizes",flags));
+            var call = EndingInstruction(0x28, helper.GetMethod("FitAdjacentHeader"));
+            var suffix = new byte[]{0x02}.Concat(text).Concat(new byte[]{0x02}).Concat(sizes).Concat(call).Concat(new byte[]{0x2a}).ToArray();
+            byte[] code = panel.GetMethod("Repaint",flags).GetMethodBody().GetILAsByteArray();
+            Check(code.Skip(code.Length-suffix.Length).SequenceEqual(suffix));
+        }
+        var fitHeader = EndingInstruction(0x28, helper.GetMethod("FitFactionGrid")).Concat(new byte[]{0x02,0x02}).Concat(visualState)
+            .Concat(EndingInstruction(0x28, helper.GetMethod("FitFactionHeader"))).Concat(new byte[]{0x2a}).ToArray();
+        foreach (string name in new[]{"Repaint","RepaintResearch","RepaintNaz"}) {
+            byte[] code = faction.GetMethod(name, flags).GetMethodBody().GetILAsByteArray();
+            Check(code.Skip(code.Length - fitHeader.Length).SequenceEqual(fitHeader));
+        }
     }
 
     static void IraqEventTemplates(System.Reflection.Assembly game)

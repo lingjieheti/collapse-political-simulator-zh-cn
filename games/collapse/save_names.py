@@ -9,7 +9,7 @@ import zipfile
 HERE = Path(__file__).resolve().parent
 FILE = 'Managed/Assembly-CSharp.dll'
 ORIGINAL = 'b421226acdfd29f27f64758378b0ab94af76f89566d9ad1e9280df913c8646ef'
-PATCHED = '77443c58055b7df782c6988f182500af47da63842c6906c183259605c27874aa'
+PATCHED = '6de7448b1915acafe1141fef62ac2f88486584c55c4a0e29fc67ad4d80868b32'
 CECIL = 'd2a23832aaa948ba9a01acc42b5726e34c5f995958f1b30d45c0e7c70b3a72d5'
 
 
@@ -47,10 +47,10 @@ def build(original, managed):
                 raise ValueError('本地生成游戏界面组件失败。\n' + detail[-1200:])
         run([compiler, '/nologo', '/codepage:65001', '/noconfig', '/nostdlib+', '/target:library', '/optimize+',
              '/out:'+str(helper), *('/r:'+str(p) for p in [*references,source]), HERE/'SaveNameLayout.cs',
-             HERE/'DiplomacyLayout.cs', HERE/'VotingPanel.cs', HERE/'VotingLayout.cs', HERE/'CurrencyTooltip.cs', HERE/'EndingLayout.cs'])
+             HERE/'DiplomacyLayout.cs', HERE/'VotingPanel.cs', HERE/'VotingLayout.cs', HERE/'CurrencyTooltip.cs', HERE/'EndingLayout.cs', HERE/'FactionPanelLayout.cs', HERE/'AdjacentHeader.cs'])
         run([compiler, '/nologo', '/codepage:65001', '/optimize+', '/r:'+str(work/'Mono.Cecil.dll'),
              '/out:'+str(builder), HERE/'BuildSaveNameLayout.cs', HERE/'BuildVotingPanel.cs',
-             HERE/'BuildMysticalIntro.cs', HERE/'BuildCurrencyTooltip.cs', HERE/'BuildCampaignVacancies.cs', HERE/'BuildKoreaEvent.cs', HERE/'BuildIraqEvent.cs'])
+             HERE/'BuildMysticalIntro.cs', HERE/'BuildCurrencyTooltip.cs', HERE/'BuildCampaignVacancies.cs', HERE/'BuildKoreaEvent.cs', HERE/'BuildIraqEvent.cs', HERE/'BuildAdjacentHeader.cs'])
         run([builder,source,helper,target,managed,HERE/'display_literals.tsv'])
         out = target.read_bytes()
         if hashlib.sha256(out).hexdigest() != PATCHED:

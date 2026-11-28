@@ -6,9 +6,9 @@
 
 首次安装如缺少社区翻译底包，请保持 Steam 已登录，安装器会请求 Steam 下载。也可手动选择目录。游戏更新后，可点 **核验汉化** 检查当前安装。需要恢复原版时，点击 **还原原版**。
 
-适配 Steam Windows x64 构建 **24949409**。v1.3.1 修正了结局页的六个国家和地区标签、正文首行以及 2003 年伊拉克事件的两处错误。此版包含法律表决页的字号、零议席提示和费用预览修复，已有旧版可退出游戏后直接升级。
+适配 Steam Windows x64 构建 **24949409**。v1.3.2 调整了派系列表、影响力数值和行动按钮的排版，也修正了党务和部委页面压到分隔线的文字。已有旧版可退出游戏后直接升级。
 
-[结局页修复前后对照](docs/ending-tabs.webp) · [表决页修复前后对照](docs/voting-layout.webp) · [游玩与表决测试](games/collapse/COMMUNITY-1.3.0.md) · [外交页](docs/diplomacy-layout.webp) · [人物效果](docs/personality-effects.webp) · [西方基金会说明](docs/foundation-policy.webp) · [顶部悬停提示](docs/hover-tooltips.webp) · [党派与剧本首行对照](docs/party-description.webp) · [存档界面](docs/save-names.webp) · [设置页](docs/settings-zh.webp) · [补丁来源](games/collapse/README.md)
+[派系页修复前后对照](docs/faction-layout.webp) · [结局页](docs/ending-tabs.webp) · [法律表决](docs/voting-layout.webp) · [游玩与表决测试](games/collapse/COMMUNITY-1.3.0.md) · [外交页](docs/diplomacy-layout.webp) · [人物效果](docs/personality-effects.webp) · [西方基金会说明](docs/foundation-policy.webp) · [顶部悬停提示](docs/hover-tooltips.webp) · [党派与剧本首行对照](docs/party-description.webp) · [存档界面](docs/save-names.webp) · [设置页](docs/settings-zh.webp) · [补丁来源](games/collapse/README.md)
 
 <details>
 <summary>从源码构建安装程序</summary>

@@ -39,6 +39,51 @@ static partial class BuildSaveNameLayout
         faction.Fields.Add(cache);
         var actionLabels = faction.Fields.Single(f => f.Name == "actions_buttons_text");
         var fitGrid = add("FitFactionGrid");
+        var tooltip = faction.Methods.Single(m => m.Name == "TryShowStructuredTooltip");
+        var showTooltip = tooltip.Body.Instructions.Single(i => i.OpCode == OpCodes.Callvirt &&
+            ((MethodReference)i.Operand).FullName == "System.Void PopUpWindowManager::Show(System.String)");
+        var format = showTooltip.Previous;
+        if (format.OpCode != OpCodes.Call || ((MethodReference)format.Operand).DeclaringType.Name != "ButtonTooltipBuilder" ||
+            ((MethodReference)format.Operand).Name != "Build")
+            throw new InvalidDataException("Unexpected faction tooltip construction");
+        tooltip.Body.GetILProcessor().InsertAfter(format, Instruction.Create(OpCodes.Call,
+            helpers.Methods.Single(m => m.Name == "DiplomacyPunctuation")));
+        var seen = new FieldDefinition("zhFactionLayoutSeen", FieldAttributes.Private, game.TypeSystem.Boolean);
+        faction.Fields.Add(seen);
+        var rowLayout = add("FitFactionListRow");
+        var headerLayout = add("FitFactionHeader");
+        var actionHover = add("SetFactionActionHover");
+        foreach (bool pointerEntered in new[]{ true, false }) {
+            string name = pointerEntered ? "IButtonPressReceiver.OnButtonEnter" : "IButtonPressReceiver.OnButtonExit";
+            var dispatch = faction.Methods.Single(m => m.Name == name && m.Parameters.Count == 1 &&
+                m.Parameters[0].ParameterType.FullName == "System.Int32");
+            var il = dispatch.Body.GetILProcessor();
+            var first = dispatch.Body.Instructions[0];
+            il.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));
+            il.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_1));
+            il.InsertBefore(first, Instruction.Create(pointerEntered ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
+            il.InsertBefore(first, Instruction.Create(OpCodes.Call, actionHover));
+        }
+        var row = faction.Methods.Single(m => m.Name == "SetObject" && m.Parameters.Count == 2 &&
+            m.Parameters[0].ParameterType.FullName == "System.Int32" &&
+            m.Parameters[1].ParameterType.FullName == "UnityEngine.GameObject");
+        if (!row.Body.Instructions.Any(i => i.OpCode == OpCodes.Stfld &&
+            ((FieldReference)i.Operand).FullName == "System.Int32 GenericButtonPressScript::num" &&
+            i.Previous.OpCode == OpCodes.Ldarg_1))
+            throw new InvalidDataException("Unexpected faction list button binding");
+        var rowIl = row.Body.GetILProcessor();
+        foreach (var exit in row.Body.Instructions.Where(i => i.OpCode == OpCodes.Ret).ToArray()) {
+            exit.OpCode = OpCodes.Ldarg_0;
+            var obj = Instruction.Create(OpCodes.Ldarg_2);
+            var apply = Instruction.Create(OpCodes.Call, rowLayout);
+            var owner = Instruction.Create(OpCodes.Ldarg_0);
+            var layoutState = Instruction.Create(OpCodes.Ldflda, seen);
+            rowIl.InsertAfter(exit, obj);
+            rowIl.InsertAfter(obj, owner);
+            rowIl.InsertAfter(owner, layoutState);
+            rowIl.InsertAfter(layoutState, apply);
+            rowIl.InsertAfter(apply, Instruction.Create(OpCodes.Ret));
+        }
         foreach (string name in new[] { "Repaint", "RepaintResearch", "RepaintNaz" }) {
             var paint = faction.Methods.Single(m => m.Name == name);
             var il = paint.Body.GetILProcessor();
@@ -52,6 +97,10 @@ static partial class BuildSaveNameLayout
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldflda, cache);
             il.Emit(OpCodes.Call, fitGrid);
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldflda, seen);
+            il.Emit(OpCodes.Call, headerLayout);
             il.Emit(OpCodes.Ret);
             ExpandShortBranches(paint);
         }
