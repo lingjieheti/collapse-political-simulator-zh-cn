@@ -9,7 +9,7 @@ import zipfile
 HERE = Path(__file__).resolve().parent
 FILE = 'Managed/Assembly-CSharp.dll'
 ORIGINAL = 'b421226acdfd29f27f64758378b0ab94af76f89566d9ad1e9280df913c8646ef'
-PATCHED = 'f32eb3e6687d656788e4e333f9a66130763511acff83bbfdc3b80fbe16bcd812'
+PATCHED = '5761fc107eda3fbd16a9c4049311be1197c6a4bac3dbef472f00556809bde5d3'
 CECIL = 'd2a23832aaa948ba9a01acc42b5726e34c5f995958f1b30d45c0e7c70b3a72d5'
 
 
@@ -47,9 +47,10 @@ def build(original, managed):
                 raise ValueError('本地生成游戏界面组件失败。\n' + detail[-1200:])
         run([compiler, '/nologo', '/codepage:65001', '/noconfig', '/nostdlib+', '/target:library', '/optimize+',
              '/out:'+str(helper), *('/r:'+str(p) for p in [*references,source]), HERE/'SaveNameLayout.cs',
-             HERE/'DiplomacyLayout.cs'])
+             HERE/'DiplomacyLayout.cs', HERE/'VotingPanel.cs', HERE/'VotingLayout.cs', HERE/'CurrencyTooltip.cs'])
         run([compiler, '/nologo', '/codepage:65001', '/optimize+', '/r:'+str(work/'Mono.Cecil.dll'),
-             '/out:'+str(builder), HERE/'BuildSaveNameLayout.cs'])
+             '/out:'+str(builder), HERE/'BuildSaveNameLayout.cs', HERE/'BuildVotingPanel.cs',
+             HERE/'BuildMysticalIntro.cs', HERE/'BuildCurrencyTooltip.cs', HERE/'BuildCampaignVacancies.cs', HERE/'BuildKoreaEvent.cs'])
         run([builder,source,helper,target,managed,HERE/'display_literals.tsv'])
         out = target.read_bytes()
         if hashlib.sha256(out).hexdigest() != PATCHED:

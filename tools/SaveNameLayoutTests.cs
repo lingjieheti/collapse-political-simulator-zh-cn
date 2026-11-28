@@ -19,7 +19,8 @@ namespace UnityEngine
         public static Vector2 zero { get { return new Vector2(); } }
         public static implicit operator Vector2(Vector3 v) { return new Vector2{x=v.x,y=v.y}; }
     }
-    public class BoxCollider2D : Object { public Vector2 offset, size; }
+    public class Collider2D : Object { public bool enabled = true; }
+    public class BoxCollider2D : Collider2D { public Vector2 offset, size; }
     public enum SystemLanguage { English, Russian }
     public struct Vector3
     {
@@ -60,6 +61,7 @@ namespace UnityEngine
     }
     public class Renderer : Object
     {
+        public bool enabled = true;
         GameObject owner;
         float fixedWidth;
         public Renderer(GameObject owner, float width=0) { this.owner=owner; fixedWidth=width; }
@@ -86,7 +88,16 @@ class SaveController { public TextMesh text; public SaveLocalController[] saveLo
 class Mod { public int type; }
 class ModManager { public static ModManager inst; public int loadedMod; public List<Mod> mods; }
 class Minister { public int owner; }
-class GameState { public int party; public int[] modifies = new int[141]; public Minister[] ministers = new Minister[14]; }
+class ThisParty { public int money, admin; }
+class GlobalScript { public static GlobalScript inst; public GameState gameState; }
+class LawsVotingController
+{
+    public TextMesh deputies = new TextMesh(), playerStat = new TextMesh();
+    public GameObject[] buttons = Enumerable.Range(0,7).Select(i=>new GameObject()).ToArray();
+}
+class GameState { public int[] laws=new int[34], deputies=new int[7];
+    public ThisParty[] parties=Enumerable.Range(0,7).Select(i=>new ThisParty()).ToArray();
+    public int party; public int[] modifies = new int[141]; public Minister[] ministers = new Minister[14]; }
 class LanguageManager
 {
     public static LanguageManager inst;
@@ -150,9 +161,61 @@ class SaveNameTests
         Check(SaveNameLayout.DiplomacyTitle("原文。\n状态") == "原文。\n状态");
         LanguageManager.inst = null;
     }
+    static void VotingPanels()
+    {
+        LanguageManager.inst=new LanguageManager { language=SystemLanguage.English };
+        Check(!SaveNameLayout.ChineseVoting());
+        LanguageManager.inst.gui_text[1563]="通过门槛：{1}%";
+        var state=new GameState{party=2};
+        GlobalScript.inst=new GlobalScript{gameState=state};
+        var panel=new LawsVotingController();
+        state.parties[2].money=300;state.parties[2].admin=800;
+        panel.buttons[2].activeSelf=false;
+        Check(!SaveNameLayout.VotingHasSeats(state) && SaveNameLayout.VotingShare(0,0)==0f);
+        Check(SaveNameLayout.VotingShare(5,10)==.5f);
+        var chart = new GameObject();
+        chart.renderer = new Renderer(chart);
+        chart.collider = new BoxCollider2D();
+        SaveNameLayout.VotingChartVisibility(chart,false);
+        Check(chart.activeSelf && !chart.renderer.enabled && !chart.collider.enabled);
+        SaveNameLayout.VotingChartVisibility(chart,true);
+        Check(chart.activeSelf && chart.renderer.enabled && chart.collider.enabled);
+        Check(SaveNameLayout.VotingFixedBlocked(state,true,false) && !SaveNameLayout.VotingFixedBlocked(state,true,true));
+        Check(!SaveNameLayout.VotingFixedBlocked(state,false,false));
+        SaveNameLayout.VotingPanelText(panel,true,false,-1,1,false,false,true);
+        Check(panel.deputies.text.Contains("无议席") && panel.deputies.text.Contains("撤回"));
+        Check(!panel.playerStat.text.Contains("预计") && panel.playerStat.text.Contains("30"));
+        panel.buttons[5].activeSelf=false;
+        SaveNameLayout.VotingPanelText(panel,false,true,2,1,false,false,true);
+        Check(panel.deputies.text.Contains("可返回地图"));
+        SaveNameLayout.VotingPanelText(panel,false,false,1,1,false,false,true);
+        Check(panel.deputies.text.Contains("可表态") && panel.playerStat.text.Contains("提案党承担费用"));
+        state.deputies[1]=39;
+        panel.deputies.text="56.4%";SaveNameLayout.VotingPanelText(panel,false,false,1,1,false,false,true);
+        Check(panel.deputies.text.Contains("56.4%") && panel.deputies.text.Contains("可表态"));
+        state.deputies[2]=1;panel.buttons[2].activeSelf=true;
+        panel.deputies.text="50.1%\nother";panel.playerStat.text="expense";
+        SaveNameLayout.VotingPanelText(panel,true,false,-1,0,false,false,true);
+        Check(panel.deputies.text.Contains("尚未选择") && !panel.playerStat.text.Contains("expense"));
+        panel.deputies.text="normal";panel.playerStat.text="real forecast";
+        SaveNameLayout.VotingPanelText(panel,true,false,-1,1,false,false,true);
+        Check(panel.deputies.text=="normal" && panel.playerStat.text=="real forecast");
+        Check(SaveNameLayout.VotingVetoCost(1000).Equals(100f) && SaveNameLayout.VotingThreshold(50).Equals("50.1"));
+        var draft=new int[34];draft[0]=3;int[] callerPressure={6,5,4,3,2,1,0};int[] pressure=callerPressure;
+        bool fixedProposal=true, offered=true;int proposer=2;
+        SaveNameLayout.ClearBlockedVotingDraft(state,draft,ref pressure,ref fixedProposal,ref offered,ref proposer);
+        Check(draft[0]==0 && !fixedProposal && !offered && proposer==-1 && callerPressure[0]==6 && pressure[0]==0);
+        LanguageManager.inst.language=SystemLanguage.Russian;
+        state.deputies[2]=0;panel.deputies.text="native";panel.playerStat.text="native";
+        SaveNameLayout.VotingPanelText(panel,true,false,-1,1,false,false,true);
+        Check(panel.deputies.text=="native" && panel.playerStat.text=="native");
+        Check(SaveNameLayout.VotingVetoCost(1000).Equals(1000) && SaveNameLayout.VotingThreshold(50).Equals(50));
+        LanguageManager.inst=null;
+    }
     static void Main()
     {
         Diplomacy();
+        VotingPanels();
         var paragraph = new TextMesh { text="正文", visualHeight=4f };
         var mask = new Material { lower=0f };
         const float top=2.12f, previousBottom=9f;

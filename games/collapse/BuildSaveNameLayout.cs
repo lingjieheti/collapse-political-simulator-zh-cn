@@ -7,7 +7,7 @@ using System.IO;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-static class BuildSaveNameLayout
+static partial class BuildSaveNameLayout
 {
     static TypeReference ImportType(ModuleDefinition game, TypeReference reference)
     {
@@ -483,6 +483,11 @@ static class BuildSaveNameLayout
             SetScrollLayout(newGame, "UpdateTextPosition", "scenario_desc", "fontMaterial", scrollLayout);
             SetScrollLayout(newGame, "UpdateTextPosition2", "party_desc", "fontMaterial2", scrollLayout);
             PatchDiplomacy(game, source, helpers);
+            PatchVoting(game, source, helpers);
+            PatchCurrencyTooltip(game, source, helpers);
+            PatchMysticalIntro(game);
+            PatchCampaignVacancies(game);
+            PatchKoreaEvent(game);
             assembly.Write(args[2], new WriterParameters { Timestamp = 0 });
         }
         }
