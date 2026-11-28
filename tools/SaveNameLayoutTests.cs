@@ -294,13 +294,20 @@ class SaveNameTests
             var text = EndingInstruction(0x7b, panel.GetField("info_text",flags));
             var sizes = EndingInstruction(0x7c, panel.GetField("zhStripNativeSizes",flags));
             var call = EndingInstruction(0x28, helper.GetMethod("FitAdjacentHeader"));
-            var suffix = new byte[]{0x02}.Concat(text).Concat(new byte[]{0x02}).Concat(sizes).Concat(call).Concat(new byte[]{0x2a}).ToArray();
+            var shortcutState = EndingInstruction(0x7c, panel.GetField("zhMiniStripLayout",flags));
+            string shortcut = name == "PartyController" ? "PartyThresholdLayout" : "MinistryShortcutLayout";
+            var suffix = new byte[]{0x02}.Concat(text).Concat(new byte[]{0x02}).Concat(sizes).Concat(call)
+                .Concat(new byte[]{0x02,0x02}).Concat(shortcutState).Concat(EndingInstruction(0x28,helper.GetMethod(shortcut)))
+                .Concat(new byte[]{0x2a}).ToArray();
             byte[] code = panel.GetMethod("Repaint",flags).GetMethodBody().GetILAsByteArray();
             Check(code.Skip(code.Length-suffix.Length).SequenceEqual(suffix));
         }
-        var fitHeader = EndingInstruction(0x28, helper.GetMethod("FitFactionGrid")).Concat(new byte[]{0x02,0x02}).Concat(visualState)
-            .Concat(EndingInstruction(0x28, helper.GetMethod("FitFactionHeader"))).Concat(new byte[]{0x2a}).ToArray();
         foreach (string name in new[]{"Repaint","RepaintResearch","RepaintNaz"}) {
+            var grid = EndingInstruction(0x28, helper.GetMethod("FitFactionGrid")).AsEnumerable();
+            if (name == "RepaintResearch")
+                grid = grid.Concat(new byte[]{0x02}).Concat(EndingInstruction(0x28, helper.GetMethod("ApplyResearchAvailability")));
+            var fitHeader = grid.Concat(new byte[]{0x02,0x02}).Concat(visualState)
+                .Concat(EndingInstruction(0x28, helper.GetMethod("FitFactionHeader"))).Concat(new byte[]{0x2a}).ToArray();
             byte[] code = faction.GetMethod(name, flags).GetMethodBody().GetILAsByteArray();
             Check(code.Skip(code.Length - fitHeader.Length).SequenceEqual(fitHeader));
         }
