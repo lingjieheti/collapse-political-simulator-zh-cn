@@ -28,6 +28,8 @@ static class BuildSaveNameLayout
         var call = value as MethodReference;
         if (call != null && call.DeclaringType.FullName == "SaveNameLayout")
             return game.GetType("SaveNameLayout").Methods.Single(m => m.Name == call.Name);
+        if (call != null && call.DeclaringType.Scope.Name == game.Assembly.Name.Name)
+            return game.GetType(call.DeclaringType.FullName).Methods.Single(m => m.FullName == call.FullName);
         if (call != null) return game.ImportReference(call);
         var type = value as TypeReference;
         return type != null ? ImportType(game, type) : value;
@@ -181,6 +183,144 @@ static class BuildSaveNameLayout
         }
     }
 
+    static void ExpandShortBranches(MethodDefinition method)
+    {
+        foreach (var branch in method.Body.Instructions.Where(i => i.OpCode.OperandType == OperandType.ShortInlineBrTarget)) {
+            string name = branch.OpCode.Code.ToString().Replace("_S", "");
+            branch.OpCode = (OpCode)typeof(OpCodes).GetField(name).GetValue(null);
+        }
+    }
+
+    static void PatchDiplomacy(ModuleDefinition game, TypeDefinition source, TypeDefinition helpers)
+    {
+        foreach (var name in new[] { "FitDiplomacyBounds", "WrapDiplomacyButton", "FitDiplomacyGrid",
+                                     "FitDiplomacyPanel", "DiplomacyTitleIndex", "DiplomacyParty", "DiplomacyThresholdCountry",
+                                     "DiplomacyRelationLabel", "DiplomacyPunctuation", "DiplomacyTitle" })
+            CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == name));
+
+        var country = game.GetType("CountryController");
+        var repaint = country.Methods.Single(m => m.Name == "Repaint");
+        var threshold = country.Methods.Single(m => m.Name == "ShowColumnThresholdTooltip");
+        var title = country.Methods.Single(m => m.Name == "BuildButtonTitle");
+        var parties = repaint.Body.Instructions.Where(i => i.OpCode == OpCodes.Callvirt &&
+            ((MethodReference)i.Operand).FullName == "System.String LanguageManager::GetPartyName(System.Int32,System.Boolean)").ToArray();
+        if (parties.Length != 4) throw new InvalidDataException("Unexpected diplomacy owner branches");
+        foreach (var call in parties) {
+            call.OpCode = OpCodes.Call;
+            call.Operand = helpers.Methods.Single(m => m.Name == "DiplomacyParty");
+        }
+        var relation = threshold.Body.Instructions.Single(i => i.OpCode == OpCodes.Callvirt &&
+            ((MethodReference)i.Operand).FullName == "System.String LanguageManager::GetCountryName(System.Int32)");
+        relation.OpCode = OpCodes.Call;
+        relation.Operand = helpers.Methods.Single(m => m.Name == "DiplomacyThresholdCountry");
+        var trim = threshold.Body.Instructions.Last(i => i.OpCode == OpCodes.Callvirt && ((MethodReference)i.Operand).Name == "TrimEnd");
+        threshold.Body.GetILProcessor().InsertAfter(trim, Instruction.Create(OpCodes.Call,
+            helpers.Methods.Single(m => m.Name == "DiplomacyRelationLabel")));
+        var index = title.Body.Instructions.Single(i => i.OpCode == OpCodes.Call &&
+            ((MethodReference)i.Operand).Name == "GetTitleTemplateIdx");
+        var titleIl = title.Body.GetILProcessor();
+        var near = index.Next;
+        titleIl.InsertBefore(near, Instruction.Create(OpCodes.Ldarg_0));
+        titleIl.InsertBefore(near, Instruction.Create(OpCodes.Ldfld, country.Fields.Single(f => f.Name == "selected_country")));
+        titleIl.InsertBefore(near, Instruction.Create(OpCodes.Ldarg_1));
+        titleIl.InsertBefore(near, Instruction.Create(OpCodes.Call, helpers.Methods.Single(m => m.Name == "DiplomacyTitleIndex")));
+        var strip = title.Body.Instructions.Single(i => i.OpCode == OpCodes.Call && ((MethodReference)i.Operand).Name == "StripTrailingStatusBlock");
+        title.Body.GetILProcessor().InsertAfter(strip, Instruction.Create(OpCodes.Call, helpers.Methods.Single(m => m.Name == "DiplomacyTitle")));
+
+        foreach (var method in country.Methods.Where(m => m.HasBody)) {
+            var calls = method.Body.Instructions.Where(i => i.OpCode == OpCodes.Callvirt &&
+                ((MethodReference)i.Operand).FullName == "System.Void PopUpWindowManager::Show(System.String)").ToArray();
+            if (calls.Length == 0) continue;
+            var il = method.Body.GetILProcessor();
+            foreach (var call in calls) {
+                var show = (MethodReference)call.Operand;
+                call.OpCode = OpCodes.Call;
+                call.Operand = helpers.Methods.Single(m => m.Name == "DiplomacyPunctuation");
+                il.InsertAfter(call, Instruction.Create(OpCodes.Callvirt, show));
+            }
+            ExpandShortBranches(method);
+        }
+
+        // The world tab never assigned info_text[3]. Reuse the union tab's
+        // original owner-selection block on an independent repaint as well.
+        var clear = repaint.Body.Instructions.Single(i => i.OpCode == OpCodes.Callvirt &&
+            ((MethodReference)i.Operand).Name == "set_text" && i.Previous.OpCode == OpCodes.Ldnull &&
+            i.Previous.Previous.OpCode == OpCodes.Ldelem_Ref && i.Previous.Previous.Previous.OpCode == OpCodes.Ldc_I4_2 &&
+            ((FieldReference)i.Previous.Previous.Previous.Previous.Operand).Name == "info_text");
+        var exit = repaint.Body.Instructions.Last();
+        if (exit.OpCode != OpCodes.Ret || exit.Previous.OpCode != OpCodes.Callvirt ||
+            ((MethodReference)exit.Previous.Operand).Name != "set_text") throw new InvalidDataException("Unexpected diplomacy world tab");
+        var paintIl = repaint.Body.GetILProcessor();
+        paintIl.InsertBefore(exit, Instruction.Create(OpCodes.Call, helpers.Methods.Single(m => m.Name == "ChineseHud")));
+        paintIl.InsertBefore(exit, Instruction.Create(OpCodes.Brtrue, clear.Next));
+        foreach (var type in new[] { country, game.GetType("MinistryController"), game.GetType("PartyController") }) {
+            var paint = type.Methods.Single(m => m.Name == "Repaint");
+            ExpandShortBranches(paint);
+            var sizes = new FieldDefinition("zhActionLabelSizes", FieldAttributes.Private,
+                                            new ArrayType(game.TypeSystem.Single));
+            type.Fields.Add(sizes);
+            var labels = type.Fields.Single(f => f.Name == "actions_buttons_text");
+            var il = paint.Body.GetILProcessor();
+            var finish = Instruction.Create(OpCodes.Ldarg_0);
+            foreach (var ret in paint.Body.Instructions.Where(i => i.OpCode == OpCodes.Ret).ToArray()) {
+                ret.OpCode = OpCodes.Br;
+                ret.Operand = finish;
+            }
+            il.Append(finish);
+            il.Emit(OpCodes.Ldfld, labels);
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldflda, sizes);
+            il.Emit(OpCodes.Call, helpers.Methods.Single(m => m.Name == "FitDiplomacyGrid"));
+            if (type == country) {
+                var applied = new FieldDefinition("zhDiplomacyApplied", FieldAttributes.Private, game.TypeSystem.Boolean);
+                type.Fields.Add(applied);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, applied);
+                il.Emit(OpCodes.Call, helpers.Methods.Single(m => m.Name == "FitDiplomacyPanel"));
+                il.Emit(OpCodes.Stfld, applied);
+                // Labels populated by other objects in Awake are ready at Start.
+                if (type.Methods.Any(m => m.Name == "Start")) throw new InvalidDataException("Unexpected diplomacy Start");
+                var start = new MethodDefinition("Start", MethodAttributes.Private | MethodAttributes.HideBySig, game.TypeSystem.Void);
+                type.Methods.Add(start);
+                var startIl = start.Body.GetILProcessor();
+                var done = Instruction.Create(OpCodes.Ret);
+                startIl.Emit(OpCodes.Call, helpers.Methods.Single(m => m.Name == "ChineseHud"));
+                startIl.Emit(OpCodes.Brfalse, done);
+                startIl.Emit(OpCodes.Ldarg_0);
+                startIl.Emit(OpCodes.Call, paint);
+                startIl.Append(done);
+            }
+            il.Emit(OpCodes.Ret);
+        }
+    }
+
+
+    static void PatchHudCounters(MethodDefinition repaint, MethodDefinition fit)
+    {
+        var size = new FieldDefinition("zhCounterOriginalSize", FieldAttributes.Private, repaint.Module.TypeSystem.Single);
+        repaint.DeclaringType.Fields.Add(size);
+        var body = repaint.Body;
+        foreach (var branch in body.Instructions.Where(i => i.OpCode.OperandType == OperandType.ShortInlineBrTarget)) {
+            string name = branch.OpCode.Code.ToString().Replace("_S", "");
+            branch.OpCode = (OpCode)typeof(OpCodes).GetField(name).GetValue(null);
+        }
+        var exits = body.Instructions.Where(i => i.OpCode == OpCodes.Ret).ToArray();
+        if (exits.Length == 0) throw new InvalidDataException("No HUD refresh exit");
+        var il = body.GetILProcessor();
+        var finish = Instruction.Create(OpCodes.Ldarg_0);
+        foreach (var exit in exits) {
+            exit.OpCode = OpCodes.Br;
+            exit.Operand = finish;
+        }
+        il.Append(finish);
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldflda, size);
+        il.Emit(OpCodes.Call, fit);
+        il.Emit(OpCodes.Ret);
+    }
+
     static void Main(string[] args)
     {
         using (var resolver = new DefaultAssemblyResolver()) {
@@ -315,6 +455,7 @@ static class BuildSaveNameLayout
             if (units.Length != 5) throw new InvalidOperationException("Unexpected HUD abbreviations");
             foreach (var unit in units)
                 repaintHud.Body.GetILProcessor().InsertAfter(unit, Instruction.Create(OpCodes.Call, thousands));
+            PatchHudCounters(repaintHud, CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "FitHudCounter")));
             var mystical = game.GetType("MysticalScript").Methods.Single(m => m.Name == "GetEventAnswers");
             foreach (int cost in new int[] { 500, 200 }) {
                 var prefix = mystical.Body.Instructions.Single(i => i.OpCode == OpCodes.Ldstr &&
@@ -341,6 +482,7 @@ static class BuildSaveNameLayout
             var scrollLayout = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "NewGameScrollY"));
             SetScrollLayout(newGame, "UpdateTextPosition", "scenario_desc", "fontMaterial", scrollLayout);
             SetScrollLayout(newGame, "UpdateTextPosition2", "party_desc", "fontMaterial2", scrollLayout);
+            PatchDiplomacy(game, source, helpers);
             assembly.Write(args[2], new WriterParameters { Timestamp = 0 });
         }
         }

@@ -34,6 +34,7 @@ class SaveNameTests(unittest.TestCase):
             exe = Path(tmp) / "SaveNameTests.exe"
             subprocess.run([str(csc), "/nologo", "/codepage:65001", "/out:" + str(exe),
                             str(save_names.HERE / "SaveNameLayout.cs"),
+                            str(save_names.HERE / "DiplomacyLayout.cs"),
                             str(save_names.HERE.parents[1] / "tools/SaveNameLayoutTests.cs")],
                            timeout=30, check=True)
             subprocess.run([str(exe)], timeout=15, check=True)

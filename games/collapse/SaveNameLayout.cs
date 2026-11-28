@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 
 // Display-only hooks for the game's save and backstory menu.
-internal static class SaveNameLayout
+internal static partial class SaveNameLayout
 {
     public static void SetRow(TextMesh label, string full, TextMesh date)
     {
@@ -196,6 +196,24 @@ internal static class SaveNameLayout
         if ((indicator >= 3 && indicator <= 5 || indicator == 12) && ChineseHud())
             return raw;
         return raw / 10f;
+    }
+
+    public static void FitHudCounter(InfoScript counter, ref float originalSize)
+    {
+        if (counter.num < 0 || counter.num > 12 || counter.num == 11) return;
+        TextMesh label = counter.text;
+        if (label == null) return;
+        if (originalSize > 0f && originalSize != label.characterSize)
+            label.characterSize = originalSize;
+        if (!ChineseHud()) return;
+        Renderer glyphs = label.GetComponent<Renderer>();
+        if (glyphs == null) return;
+        // Only the centered number bay is clear of the diagonal and icon.
+        float available = 1.60f * Math.Abs(label.transform.lossyScale.x);
+        float width = glyphs.bounds.size.x;
+        if (available <= 0f || width <= available) return;
+        if (originalSize == 0f) originalSize = label.characterSize;
+        label.characterSize = originalSize * available / width;
     }
 
     public static void SetHudText(TextMesh label, string text, ref float originalSize)

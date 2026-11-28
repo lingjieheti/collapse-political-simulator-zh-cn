@@ -116,7 +116,12 @@ def audit(tables):
                     hard['unexpanded_event_hint'].append(ref)
             # The Chinese coalition formatter embeds these two fragments in its
             # outer format string: {0} is a regional change, {5} is the party grant.
-            if key == 'gui_text' and line in (1761, 1762):
+            if key == 'system_text' and line == 1552:
+                # MinistryController.Repaint passes this label directly to TextMesh.
+                # Its English {0} was intended as a line break but is never formatted.
+                if FORMAT.search(zh):
+                    hard['unexpanded_ministry_action'].append(ref)
+            elif key == 'gui_text' and line in (1761, 1762):
                 expected = [('5',''), ('0','')] if line == 1761 else [('0','')]
                 if FORMAT.findall(zh) != expected:
                     hard['coalition_format_fields'].append(ref)

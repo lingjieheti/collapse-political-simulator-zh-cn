@@ -8,6 +8,18 @@ using UnityEngine;
 
 namespace UnityEngine
 {
+    public class Object
+    {
+        public static implicit operator bool(Object obj) { return !ReferenceEquals(obj, null); }
+    }
+    public static class Mathf { public static float Min(float a, float b) { return Math.Min(a,b); } }
+    public struct Vector2
+    {
+        public float x,y;
+        public static Vector2 zero { get { return new Vector2(); } }
+        public static implicit operator Vector2(Vector3 v) { return new Vector2{x=v.x,y=v.y}; }
+    }
+    public class BoxCollider2D : Object { public Vector2 offset, size; }
     public enum SystemLanguage { English, Russian }
     public struct Vector3
     {
@@ -15,22 +27,28 @@ namespace UnityEngine
         public Vector3(float x, float y, float z) { this.x=x; this.y=y; this.z=z; }
         public static Vector3 operator +(Vector3 a, Vector3 b) { return new Vector3(a.x+b.x,a.y+b.y,a.z+b.z); }
     }
-    public struct Bounds { public Vector3 min, max, size; }
+    public struct Bounds { public Vector3 min, max, size, center; }
     public class Material { public float lower; public float GetFloat(string field) { return lower; } }
-    public class Transform
+    public class Transform : Object
     {
-        public Vector3 position;
+        public Vector3 position, localPosition;
+        public Transform child;
+        public Transform Find(string name) { return name=="Sprite" ? child : null; }
+        public Vector3 InverseTransformVector(Vector3 v) { return v; }
+        public Vector3 InverseTransformPoint(Vector3 v) { return v; }
+        public Vector3 lossyScale = new Vector3(1f, 1f, 1f);
         public Transform parent;
         public SpriteRenderer sprite;
         public T GetComponent<T>() where T : class { return sprite as T; }
     }
-    public class GameObject
+    public class GameObject : Object
     {
         public Transform transform = new Transform();
         public bool activeSelf = true;
         public Renderer renderer;
+        public BoxCollider2D collider;
         public void SetActive(bool value) { activeSelf=value; }
-        public T GetComponent<T>() where T : class { return renderer as T; }
+        public T GetComponent<T>() where T : class { return renderer as T ?? collider as T; }
     }
     public class TextMesh : GameObject
     {
@@ -40,7 +58,7 @@ namespace UnityEngine
         public bool richText = true;
         public TextMesh() { renderer = new Renderer(this); }
     }
-    public class Renderer
+    public class Renderer : Object
     {
         GameObject owner;
         float fixedWidth;
@@ -50,12 +68,19 @@ namespace UnityEngine
             float width = text == null ? fixedWidth : text.characterSize * text.text.Sum(c => c=='i' ? .07f : c=='W' ? .30f : .17f);
             float start = owner.transform.position.x;
             float bottom = owner.transform.position.y - (text == null ? 0f : text.visualHeight);
-            return new Bounds { min=new Vector3(start,bottom,0), max=new Vector3(start+width,0,0), size=new Vector3(width,0,0) };
+            return new Bounds { min=new Vector3(start,bottom,0), max=new Vector3(start+width,0,0), size=new Vector3(width,text==null ? .7f : text.visualHeight,0) };
         }}
     }
     public class SpriteRenderer : Renderer { public SpriteRenderer(GameObject obj,float width):base(obj,width){} }
 }
+class CountryController
+{
+    public TextMesh[] up_text = new TextMesh[5], info_text = new TextMesh[4];
+    public SimpleButtonScript[] factions_buttons = new SimpleButtonScript[3];
+}
+class SimpleButtonScript : UnityEngine.Object { public TextMesh text; public SpriteRenderer spriteRenderer; }
 class Slot { public string name; }
+class InfoScript { public int num; public TextMesh text; }
 class SaveLocalController { public Slot save; public TextMesh text; }
 class SaveController { public TextMesh text; public SaveLocalController[] saveLocalControllers; }
 class Mod { public int type; }
@@ -66,13 +91,68 @@ class LanguageManager
 {
     public static LanguageManager inst;
     public SystemLanguage language;
-    public string[] gui_text = new string[2777];
+    public string[] gui_text = new string[2777], system_text = new string[1800];
+    public string GetPartyName(int party, bool colored) { return "party" + party; }
+    public string GetCountryName(int index) { return "country" + index; }
 }
 class SaveNameTests
 {
     static void Check(bool ok) { if(!ok) throw new Exception("Save name regression"); }
+    static void Diplomacy()
+    {
+        LanguageManager.inst = new LanguageManager { language = SystemLanguage.English };
+        var action = new TextMesh { text = "圣彼得堡国际经济论坛" };
+        var plate = new SpriteRenderer(new GameObject(), 1.46f);
+        action.transform.child = new Transform { sprite = plate };
+        var grid = new[] {action};
+        float[] native = null;
+        SaveNameLayout.FitDiplomacyGrid(grid, ref native);
+        Check(native[0] == 1f && action.characterSize < 1f && action.renderer.bounds.size.x <= 1.291f);
+        action.text = "短词";
+        SaveNameLayout.FitDiplomacyGrid(grid, ref native);
+        Check(action.characterSize == 1f);
+        action.text = "圣彼得堡国际经济论坛";
+        SaveNameLayout.FitDiplomacyGrid(grid, ref native);
+        var panel = new CountryController();
+        for (int i = 0; i < 5; ++i)
+            panel.up_text[i] = new TextMesh { text=i<4 ? (1991+i*4).ToString() : "", collider=new BoxCollider2D() };
+        panel.factions_buttons[1] = new SimpleButtonScript { text=new TextMesh{text=new string('长',36)},
+            spriteRenderer=new SpriteRenderer(new GameObject(),.9f) };
+        bool applied = SaveNameLayout.FitDiplomacyPanel(panel, false);
+        Check(panel.factions_buttons[1].text.characterSize < .14f);
+        Check(applied && panel.up_text[0].characterSize == .112f && panel.up_text[4].collider.size.x == 0f);
+        for (int i=0; i<5; ++i) Check(Math.Abs(panel.up_text[i].transform.localPosition.x - (i-2)*2.89f) < .01f);
+        panel.up_text[4].text = "0";
+        SaveNameLayout.FitDiplomacyPanel(panel, applied);
+        Check(panel.up_text[4].collider.size.x > 1f);
+        Check(SaveNameLayout.DiplomacyPunctuation("已经成立：: 条件： :") == "已经成立： 条件：");
+        Check(SaveNameLayout.DiplomacyTitle("说明。\n已参加：") == "说明。");
+        Check(SaveNameLayout.DiplomacyTitle("说明。<color=#8B0000>所需条件") == "说明。");
+        LanguageManager.inst.system_text[1652] = "无人主导";
+        Check(SaveNameLayout.DiplomacyParty(LanguageManager.inst,-1,true) == "无人主导");
+        Check(SaveNameLayout.DiplomacyParty(LanguageManager.inst,6,true) == "party6");
+        Check(SaveNameLayout.DiplomacyThresholdCountry(LanguageManager.inst,0) == "俄罗斯");
+        foreach (int n in new[] {20,22,23}) {
+            Check(SaveNameLayout.DiplomacyTitleIndex(-1,0,n) == 884+n);
+            Check(SaveNameLayout.DiplomacyTitleIndex(-1,1,n) == 909+n);
+            Check(SaveNameLayout.DiplomacyTitleIndex(-1,2,n) == -1);
+        }
+        Check(SaveNameLayout.DiplomacyTitleIndex(100,1,20) == 100);
+        Check(SaveNameLayout.DiplomacyTitleIndex(-1,0,21) == -1);
+        LanguageManager.inst.language = SystemLanguage.Russian;
+        SaveNameLayout.FitDiplomacyGrid(grid, ref native);
+        Check(native == null && action.characterSize == 1f);
+        Check(!SaveNameLayout.FitDiplomacyPanel(panel, applied) && panel.up_text[0].characterSize == .2f);
+        Check(SaveNameLayout.DiplomacyParty(LanguageManager.inst,-1,true) == "party-1");
+        Check(SaveNameLayout.DiplomacyThresholdCountry(LanguageManager.inst,0) == "country0");
+        Check(SaveNameLayout.DiplomacyTitleIndex(-1,0,20) == -1);
+        Check(SaveNameLayout.DiplomacyPunctuation("原文：:") == "原文：:");
+        Check(SaveNameLayout.DiplomacyTitle("原文。\n状态") == "原文。\n状态");
+        LanguageManager.inst = null;
+    }
     static void Main()
     {
+        Diplomacy();
         var paragraph = new TextMesh { text="正文", visualHeight=4f };
         var mask = new Material { lower=0f };
         const float top=2.12f, previousBottom=9f;
@@ -129,6 +209,22 @@ class SaveNameTests
         Check(String.Format(SaveNameLayout.HudChangeFormat(positive), "支持率", 5).EndsWith("<color=#99FF73>+5</color>"));
         Check(String.Format(SaveNameLayout.HudChangeFormat(negative), "支持率", -5).EndsWith("<color=#FF001D>-5</color>"));
         Check(SaveNameLayout.HudThousands("М.") == "千" && SaveNameLayout.HudThousands("Т.") == "千");
+        var counter = new InfoScript { num = 12, text = new TextMesh { text = "123456789千" } };
+        float counterSize = 0f;
+        SaveNameLayout.FitHudCounter(counter, ref counterSize);
+        Check(counterSize == 1f && counter.text.renderer.bounds.size.x <= 1.601f && counter.text.text == "123456789千");
+        counter.text.text = "42";
+        SaveNameLayout.FitHudCounter(counter, ref counterSize);
+        Check(counter.text.characterSize == 1f);
+        counter.text.text = "123456789千";
+        SaveNameLayout.FitHudCounter(counter, ref counterSize);
+        LanguageManager.inst.language = SystemLanguage.Russian;
+        SaveNameLayout.FitHudCounter(counter, ref counterSize);
+        Check(counter.text.characterSize == 1f);
+        LanguageManager.inst.language = SystemLanguage.English;
+        counter.num = 11;
+        SaveNameLayout.FitHudCounter(counter, ref counterSize);
+        Check(counter.text.characterSize == 1f);
         foreach (int raw in new int[] { -38, 0, 38 }) {
             foreach (int indicator in new int[] { 3, 4, 5, 12 })
                 Check(SaveNameLayout.HudDeltaValue(raw, indicator).Equals(raw));
