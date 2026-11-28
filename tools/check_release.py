@@ -90,6 +90,12 @@ def check_collapse_and_fonts(chars):
     for sections in installer["load_guide_sections"]().values():
         for section in sections.values():
             chars.update(text_line(section))
+    for line in (folder / "narrative_fragments.tsv").read_text("utf-8").splitlines():
+        _, _, revised = line.split("\t")
+        chars.update(text_line(revised))
+    for path in folder.glob("*.cs"):
+        for literal in re.findall(r'"(?:[^"\\\n]|\\.)*"', path.read_text("utf-8-sig")):
+            chars.update(literal)
     needed = {ord(c) for c in chars if 0x3400 <= ord(c) <= 0x9fff}
     for weight in ("Regular", "Semibold"):
         font = (ROOT / "fonts" / f"UI-{weight}.ttf").read_bytes()
@@ -104,7 +110,7 @@ def check_collapse_and_fonts(chars):
         require(0x200a in after_spaces and after_spaces[0x20] + after_spaces[0x200a] == before_spaces[0x20],
                 f"Latin word spacing changed in {weight}")
     print(f"Collapse: {total} edits, both font weights and both icon deltas verified")
-    print(f"Fonts: all {len(needed)} distinct Han characters in the public revision files are mapped")
+    print(f"Fonts: all {len(needed)} distinct Han characters in the public revisions and UI literals are mapped")
 
 def check_revised_text():
     rows = {}

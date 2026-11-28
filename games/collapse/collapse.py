@@ -160,6 +160,18 @@ def revise_guides(rows, revisions):
             parts[section] = value
         rows[row - 1] = '||'.join(parts)
 
+def revise_event_fragments(rows):
+    path = Path(__file__).with_name('narrative_fragments.tsv')
+    for line in path.read_text('utf-8').splitlines():
+        row, before, after = line.split('\t')
+        index = int(row) - 1
+        require(0 <= index < len(rows) and before and after, '叙事修订行号或内容无效。')
+        # The pinned Workshop file inserts spaces between individual Chinese letters.
+        pattern = ' *'.join(re.escape(char) for char in before)
+        updated, count = re.subn(pattern, lambda _: after, rows[index])
+        require(count == 1, f'叙事修订第 {row} 行未能唯一定位。')
+        rows[index] = updated
+
 # Game text uses {0} for soft line breaks on many panels, and numbered fields for
 # actual substitutions. Keep both intact. Short labels fit without inter-character
 # spaces; retain the word-wrap opportunities in long community narrative paragraphs.
@@ -279,6 +291,8 @@ def build(pristine, upstream):
         base = source.decode('utf-8-sig').splitlines()
         require(len(orig) == len(base) == count, f'行数不匹配：{key}')
         rows = [edits[key][n] if n in edits[key] else clean_line(key,n,t,orig[n-1]) for n,t in enumerate(base,1)]
+        if key == 'event_text':
+            revise_event_fragments(rows)
         if key == 'system_text':
             revise_guides(rows, load_guide_sections())
         rows = [wrap_chinese(party_name(row, original)) for row, original in zip(rows, orig)]

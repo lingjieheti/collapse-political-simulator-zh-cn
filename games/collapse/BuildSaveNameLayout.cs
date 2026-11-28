@@ -520,12 +520,18 @@ static partial class BuildSaveNameLayout
             PatchDiplomacy(game, source, helpers);
             PatchVoting(game, source, helpers);
             PatchAdjacentHeader(game, source, helpers);
+            PatchCabinetLayout(game, source, helpers);
+            PatchCabinetHitTargets(game, source, helpers);
+            PatchScienceProgress(game);
+            PatchStatisticsLayout(game, source, helpers);
+            PatchRallyEvent(game);
             PatchCurrencyTooltip(game, source, helpers);
             PatchMysticalIntro(game);
             PatchCampaignVacancies(game);
             PatchKoreaEvent(game);
             PatchIraqEvent(game);
             PatchEndingLayout(game, source, helpers);
+            PatchTransactionalSaves(game, source, helpers);
             assembly.Write(args[2], new WriterParameters { Timestamp = 0 });
         }
         }
