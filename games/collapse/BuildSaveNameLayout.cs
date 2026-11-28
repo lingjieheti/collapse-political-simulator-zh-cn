@@ -22,6 +22,8 @@ static partial class BuildSaveNameLayout
     static object ImportOperand(ModuleDefinition game, object value)
     {
         var field = value as FieldReference;
+        if (field != null && field.DeclaringType.FullName == "SaveNameLayout")
+            return game.GetType("SaveNameLayout").Fields.Single(f => f.Name == field.Name);
         if (field != null && field.DeclaringType.Scope.Name == game.Assembly.Name.Name)
             return game.GetType(field.DeclaringType.FullName).Fields.Single(f => f.Name == field.Name);
         if (field != null) return game.ImportReference(field);
@@ -536,6 +538,7 @@ static partial class BuildSaveNameLayout
             PatchEndingLayout(game, source, helpers);
             PatchTransactionalSaves(game, source, helpers);
             PatchEventChoices(game, source, helpers);
+            PatchNewspaperTooltip(game, source, helpers);
             assembly.Write(args[2], new WriterParameters { Timestamp = 0 });
         }
         }
