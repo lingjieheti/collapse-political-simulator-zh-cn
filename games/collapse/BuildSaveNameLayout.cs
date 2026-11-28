@@ -539,6 +539,9 @@ static partial class BuildSaveNameLayout
             PatchTransactionalSaves(game, source, helpers);
             PatchEventChoices(game, source, helpers);
             PatchNewspaperTooltip(game, source, helpers);
+            PatchFamilyEventReceipts(game, source, helpers);
+            PatchPanelActionFeedback(game, source, helpers);
+            PatchMapPanelTooltip(game, source, helpers);
             assembly.Write(args[2], new WriterParameters { Timestamp = 0 });
         }
         }

@@ -9,10 +9,15 @@ static partial class BuildSaveNameLayout
     // Run after PatchVoting (resource/language check) and PatchDiplomacy (text fitting).
     static void PatchStatisticsLayout(ModuleDefinition game, TypeDefinition source, TypeDefinition helpers)
     {
-        foreach (string name in new[] { "ResetStatisticsLabel", "PlaceStatisticsLabel", "StatisticsHeadings",
+        foreach (string name in new[] { "ResetStatisticsLabel", "PlaceStatisticsLabel", "ModifierCaptionSize", "StatisticsHeadings",
             "ReformToggle", "ReformColumns", "ReformSummary" })
             CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == name));
         var statistics = game.GetType("StatisticControlller");
+        var layout = statistics.Methods.Single(m => m.Name == "LayoutModifierSections");
+        var fitRows = layout.Body.Instructions.Single(i => i.OpCode == OpCodes.Call &&
+            ((MethodReference)i.Operand).Name == "FitSectionCaptionSize");
+        layout.Body.GetILProcessor().InsertAfter(fitRows, Instruction.Create(OpCodes.Call,
+            helpers.Methods.Single(m => m.Name == "ModifierCaptionSize")));
         var reform = game.GetType("EconomicReformController");
         AddStatisticsLayout(game, helpers, statistics, "Repaint", "statistic_buttons", "StatisticsHeadings");
         AddStatisticsLayout(game, helpers, reform, "UpdateCollapseLabel", "collapseLabel", "ReformToggle");

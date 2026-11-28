@@ -6,7 +6,7 @@
 
 首次安装如缺少社区翻译底包，请保持 Steam 已登录，安装器会请求 Steam 下载。也可手动选择目录。游戏更新后，可点 **核验汉化** 检查当前安装。需要恢复原版时，点击 **还原原版**。
 
-适配 Steam Windows x64 构建 **24949409**。v1.3.5 把事件报纸的悬停提示移到版面外侧，读正文、选择回应和翻页时都能看清控件。已有旧版可退出游戏后直接升级。[报纸页修前修后与实机验证](games/collapse/COMMUNITY-1.3.5.md)
+适配 Steam Windows x64 构建 **24949409**。v1.3.6 修复了悬停遮挡、剧情对话卡住和组阁误拨预算，补齐家庭剧情缺失的 320 条中文。旧版退出游戏后可直接升级。[本版实机验证](games/collapse/COMMUNITY-1.3.6.md) · [上一版报纸修复](games/collapse/COMMUNITY-1.3.5.md)
 
 [派系页修复前后对照](docs/faction-layout.webp) · [结局页](docs/ending-tabs.webp) · [法律表决](docs/voting-layout.webp) · [游玩与表决测试](games/collapse/COMMUNITY-1.3.0.md) · [外交页](docs/diplomacy-layout.webp) · [人物效果](docs/personality-effects.webp) · [西方基金会说明](docs/foundation-policy.webp) · [顶部悬停提示](docs/hover-tooltips.webp) · [党派与剧本首行对照](docs/party-description.webp) · [存档界面](docs/save-names.webp) · [设置页](docs/settings-zh.webp) · [补丁来源](games/collapse/README.md)
 

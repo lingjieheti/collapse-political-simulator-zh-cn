@@ -27,6 +27,13 @@ internal static partial class SaveNameLayout
         label.transform.position += new Vector3(x - center.x, y - center.y, 0f);
     }
 
+    public static float ModifierCaptionSize(float nativeSize)
+    {
+        // These fifteen narrow rows share the largest size that fits the native
+        // width calculation. Reserve vertical space for full-height CJK glyphs.
+        return ChineseVoting() ? nativeSize * .74f : nativeSize;
+    }
+
     public static void StatisticsHeadings(StatisticControlller panel, ref Vector4[] native)
     {
         bool chinese = ChineseVoting();

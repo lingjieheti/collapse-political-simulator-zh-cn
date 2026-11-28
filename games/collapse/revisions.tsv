@@ -1188,10 +1188,10 @@ gui_text	2094	向塞浦路斯账户存款。{0}条件：{0}{1}{0}当前汇率：
 gui_text	2095	从塞浦路斯账户取款。{0}条件：{0}{1}{0}当前汇率：1000 塞浦路斯镑兑 10 红第纳尔。
 gui_text	2124	已获得议席
 gui_text	2125	持有议席
-gui_text	2129	儿子就读于<color=#0027FF>{2}</color>。{0}已修完课程：{3}/3。每门学费：{4} 千镑。
-gui_text	2130	女儿就读于<color=#0027FF>{2}</color>。{0}已修完课程：{3}/3。每门学费：{4} 千镑。
-gui_text	2141	需要支付下一门课程的学费。{0}儿子就读于<color=#0027FF>{2}</color>。{0}已修完课程：{3}/3。每门学费：{4} 千镑。{0}条件：{0}{1}
-gui_text	2142	需要支付下一门课程的学费。{0}女儿就读于<color=#0027FF>{2}</color>。{0}已修完课程：{3}/3。每门学费：{4} 千镑。{0}条件：{0}{1}
+gui_text	2129	儿子就读于<color=#0027FF>{2}</color>。{0}已读完 {3}/3 学年，每学年学费为 {4} 千塞浦路斯镑。
+gui_text	2130	女儿就读于<color=#0027FF>{2}</color>。{0}已读完 {3}/3 学年，每学年学费为 {4} 千塞浦路斯镑。
+gui_text	2141	请缴纳下一学年的学费。{0}儿子就读于<color=#0027FF>{2}</color>。{0}已读完 {3}/3 学年，每学年学费为 {4} 千塞浦路斯镑。{0}条件：{0}{1}
+gui_text	2142	请缴纳下一学年的学费。{0}女儿就读于<color=#0027FF>{2}</color>。{0}已读完 {3}/3 学年，每学年学费为 {4} 千塞浦路斯镑。{0}条件：{0}{1}
 gui_text	2143	我们已经忍无可忍了。断绝关系！{0}<color=#8B0000>所需条件：</color>{0}{1}：{2}
 gui_text	2146	{1}{0}税收和国有资产收入：{2}{0}法律影响：{3}{0}修正效果：{4}{0}科研影响：{5}{0}地区收支：{6}{0}外交政策收支：{7}{0}部委收支：{8}
 gui_text	2151	至少 3 个邻国局势稳定，且已成为我国的可靠伙伴
@@ -1759,3 +1759,355 @@ gui_text	668	用别国的卫星既昂贵又不安全。我们得学会把自己�
 gui_text	669	我们也该登月了！好吧，至少先把人送上太空……哪怕先送条小狗呢。总之，先把发射场建起来！
 gui_text	2328	安全部门
 gui_text	2335	{0} · {1} · 可用结余：{2}
+event_text	309	谁会需要这个老顽固？
+event_text	311	我们党内已出现分裂的迹象！
+event_text	7562	涅丽达
+event_text	7563	乌利亚娜
+event_text	7565	布罗尼斯拉娃
+event_text	7568	伊尤莉娅
+event_text	7569	佐斯特里亚拉
+event_text	7571	拉拉
+event_text	7574	姆拉达
+event_text	7576	罗扎
+event_text	7577	罗格涅特里娅
+event_text	7578	谢韦里娜
+event_text	7579	索菲娅
+event_text	7582	列斯普布利斯
+event_text	7583	阿波隆
+event_text	7584	阿尔捷姆斯拉夫
+event_text	7585	加夫里尔
+event_text	7586	叶利扎尔
+event_text	7588	克利梅尔
+event_text	7589	拉夫连季
+event_text	7590	尼古拉
+event_text	7595	费利克斯
+event_text	7596	埃马努伊尔
+event_text	7597	雅罗波尔克
+event_text	7601	家庭矛盾
+event_text	7602	亲爱的，我们年轻时那股热乎劲儿去哪儿了？我觉得你我之间的激情都没了。你是不是不像从前那么爱我了？
+event_text	7603	亲爱的，你还要冷落我多久？我知道你有很多“要紧事”，可当初跟我说家有多重要的人是谁？发誓要爱我一辈子的人又是谁？
+event_text	7604	我们俩的事，你也该上上心了……再这样下去，我怕我们走不下去。要不，一起去找婚姻咨询师谈谈？
+event_text	7605	为什么别人的丈夫会主动关心妻子，我却非得求着你？太不像话了！当初我真是看错了人！
+event_text	7606	你真没用！我把最好的年华都给了你，到头来换来了什么？什么都没有！我当年怎么就瞎了眼！
+event_text	7607	亲爱的，你对这个家这么不上心，我心里害怕。离那些肮脏的政治远一点吧。我们也该花点心思，过过有温情的日子了。
+event_text	7608	亲爱的，工作又不是天大的事。咱们早过了四处奔走、到处喊着要变革的年纪。也该学着为自己活一回了！
+event_text	7609	你跟这个家越来越疏远，我心里很不安。我没想到有一天非得说这话，可我在自己家里连一点温暖和关心都感觉不到。
+event_text	7610	我一直以为你懂我。可如今我越来越觉得，是我想错了。
+event_text	7611	够了！你根本没把这个家放在心上！日子过成这样，还指望我一心一意地爱着你、守着这个家？我真想不通。
+event_text	7612	送她礼物
+event_text	7613	送他礼物
+event_text	7614	塞浦路斯账户
+event_text	7615	塞浦路斯账户{0}余额不足
+event_text	7616	塞浦路斯账户余额
+event_text	7617	千
+event_text	7618	用她的名字为街道命名
+event_text	7619	本党尚未掌管{0}任何地区
+event_text	7620	这样的事{0}不宜再做了
+event_text	7621	帮他{0}创业
+event_text	7622	支持他的生意
+event_text	7623	对共和国爱国教会的影响力
+event_text	7624	以她的名义建礼拜堂
+event_text	7625	用他的名字为哥萨克部队命名
+event_text	7626	礼拜堂数量已达上限
+event_text	7627	对共和国爱国教会的影响力不足{0}需要 75.0
+event_text	7628	命名的哥萨克部队已达上限
+event_text	7629	对军官俱乐部的影响力不足{0}需要 75.0
+event_text	7630	对军官俱乐部的影响力
+event_text	7631	与妻子的关系
+event_text	7632	与丈夫的关系
+event_text	7633	“党内问题”持续 5 个月
+event_text	7634	党内团结度 −25.0
+event_text	7635	党内团结度 −50.0
+event_text	7636	党内团结度 −75.0
+event_text	7637	行政资源 −7%
+event_text	7638	行政资源 −10%
+event_text	7639	行政资源 −14%
+event_text	7640	政党资金 −7%
+event_text	7641	政党资金 −10%
+event_text	7642	政党资金 −14%
+event_text	7643	婚姻破裂阈值 +1
+event_text	7644	什么也不做
+event_text	7645	多花时间陪家人
+event_text	7646	真没想到，谢谢你。我很高兴，只是我想要的其实是别的……
+event_text	7647	这礼物不错，不过，我盼的不是这个……
+event_text	7648	你是怎么张罗起来的？真是太好了……
+event_text	7649	真有你的……我一直都梦想着能有份自己的事业……
+event_text	7650	用我的名字给街道命名？你疯啦，把我当列宁了？不过……听起来倒也不错……
+event_text	7651	这你都能办到？有点奇怪，不过你这份心意我领了……
+event_text	7652	我也觉得你该多陪陪家人，少管点那该死的工作……
+event_text	7653	我向来不喜欢那些肮脏的政治。亲爱的，你这回决定得对！
+event_text	7654	爱你的妻子{0}维多利亚
+event_text	7655	爱你的妻子{0}妮娜
+event_text	7656	爱你的妻子{0}涅丽达
+event_text	7657	爱你的妻子{0}乌利亚娜
+event_text	7658	爱你的妻子{0}阿斯特拉
+event_text	7659	爱你的妻子{0}布罗尼斯拉娃
+event_text	7660	爱你的妻子{0}瓦西丽莎
+event_text	7661	爱你的妻子{0}伊万卡
+event_text	7662	爱你的妻子{0}伊尤莉娅
+event_text	7663	爱你的妻子{0}佐斯特里亚拉
+event_text	7664	爱你的妻子{0}扎拉
+event_text	7665	爱你的妻子{0}拉拉
+event_text	7666	爱你的妻子{0}玛丽娜
+event_text	7667	爱你的妻子{0}米娅
+event_text	7668	爱你的妻子{0}姆拉达
+event_text	7669	爱你的妻子{0}尼拉萨
+event_text	7670	爱你的妻子{0}罗扎
+event_text	7671	爱你的妻子{0}罗格涅特里娅
+event_text	7672	爱你的妻子{0}谢韦里娜
+event_text	7673	爱你的妻子{0}索菲娅
+event_text	7674	爱你的妻子{0}乌斯蒂娜
+event_text	7675	爱你的丈夫{0}弗拉德伦
+event_text	7676	爱你的丈夫{0}列斯普布利斯
+event_text	7677	爱你的丈夫{0}阿波隆
+event_text	7678	爱你的丈夫{0}阿尔捷姆斯拉夫
+event_text	7679	爱你的丈夫{0}加夫里尔
+event_text	7680	爱你的丈夫{0}叶利扎尔
+event_text	7681	爱你的丈夫{0}约瑟夫
+event_text	7682	爱你的丈夫{0}克利梅尔
+event_text	7683	爱你的丈夫{0}拉夫连季
+event_text	7684	爱你的丈夫{0}尼古拉
+event_text	7685	爱你的丈夫{0}奥斯塔普
+event_text	7686	爱你的丈夫{0}帕维尔
+event_text	7687	爱你的丈夫{0}德米特里
+event_text	7688	爱你的丈夫{0}萨瓦
+event_text	7689	爱你的丈夫{0}费利克斯
+event_text	7690	爱你的丈夫{0}埃马努伊尔
+event_text	7691	爱你的丈夫{0}雅罗波尔克
+event_text	7692	爱你的丈夫{0}雅罗斯拉夫
+event_text	7693	爱你的丈夫{0}瓦西里
+event_text	7694	爱你的丈夫{0}伊斯坎德尔
+event_text	7695	随你的便！谁稀罕呢……
+event_text	7696	你以前不是这样的。我敢肯定。
+event_text	7697	街道更名
+event_text	7698	今天，{3}当局将{1}更名为“{2}街”。当地市长称，此举是为纪念共和国妇女参政权运动的创始人；她曾在流亡期间与亚历山德拉·柯伦泰一同生活。{0}也有人另有说法，认为这条街用的是{4}领袖妻子的名字。
+event_text	7699	普希金街
+event_text	7700	一月街
+event_text	7701	共和国街
+event_text	7702	阳光街
+event_text	7703	工厂街
+event_text	7704	维多利亚
+event_text	7705	妮娜
+event_text	7706	涅丽达
+event_text	7707	乌利亚娜
+event_text	7708	阿斯特拉
+event_text	7709	布罗尼斯拉娃
+event_text	7710	瓦西丽莎
+event_text	7711	伊万卡
+event_text	7712	伊尤莉娅
+event_text	7713	佐斯特里亚拉
+event_text	7714	扎拉
+event_text	7715	拉拉
+event_text	7716	玛丽娜
+event_text	7717	米娅
+event_text	7718	姆拉达
+event_text	7719	尼拉萨
+event_text	7720	罗扎
+event_text	7721	罗格涅特里娅
+event_text	7722	谢韦里娜
+event_text	7723	索菲娅
+event_text	7724	乌斯蒂娜
+event_text	7725	城市规划局注意到，街道改名实在太频繁了。该局表示：“这么多条街叫同一个名字，连城市的面貌都变了样。游客要迷路，本地企业恐怕也找不着地方。”当局因此撤销了最近几次更名，恢复了原有街名。
+event_text	7726	据记者报道，{4}领袖的丈夫在{3}开了好几家公司，拿到的税收优惠和贷款条件好得出奇。当地市长恰好也是{4}的党员，有人怀疑其中涉及腐败。
+event_text	7727	{2}控制的几个地区接连曝出可疑的商业交易，引起了商业委员会的注意。调查发现，有好几家从未申报过的公司，实际所有人似乎都是{1}领袖的丈夫。巨额罚款让他不得不申请破产。
+event_text	7728	这是腐败，{0}还是理所当然？
+event_text	7729	又一座小教堂？
+event_text	7730	首都今天举行了圣女{1}小教堂的祝圣仪式。共和国爱国教会大主教和{2}领袖一家都出席了仪式。{0}大主教说：“这座小教堂采用共和国后现代建筑风格，体现了几代人之间的团结，以及我们对上帝的信仰。”{0}私下里却有人说，世上从来就没有过一位叫{1}的圣女。倒是倡议修建教堂的{2}领袖，他夫人恰好叫这个名字。
+event_text	7731	首都今天又有一座圣女{1}小教堂落成。共和国爱国教会大主教和{2}领袖一家出席了祝圣仪式。{0}这大约已是第五座同名的小教堂，开幕时却闹了个大笑话。相传先知兼救世主曾向一口圣锅吐过唾沫。轮到{1}领袖时，他竟然没吐进锅里。这一口坏了祝圣仪式的规矩，也冒犯了共和国全体信徒。
+event_text	7732	哥萨克{0}军团
+event_text	7733	共和国的一支哥萨克军团今天以{1}命名。科罗维耶夫将军和{2}领袖一家出席了授旗仪式。致辞中说：“我们不知道他的姓氏，但从今天起，我们的军团就以这位伟大的共和国哥萨克命名！内战时，他英勇地打垮了白军。到了卫国战争，他又同样英勇地痛打红军！”也有人私下笑称，这是{2}领袖送给丈夫的一份礼物。说来也巧，他正好就叫这个名字。
+event_text	7734	共和国今天又有一支哥萨克军团以{1}命名。科罗维耶夫将军和{2}领袖一家出席了授旗仪式。这大约已是第五次更名，典礼上却出了洋相。{2}领袖在致辞时一时口误，把哥萨克人叫成了哈萨克人。台下先是一片嘘声，接着骂声四起，最后竟演变成霍布斯笔下“一切人对一切人的战争”，一直闹到天黑。{0}{2}领袖一家趁乱溜走了。共和国的哥萨克人却咽不下这口气，正准备狠狠报复。
+event_text	7735	弗拉德伦
+event_text	7736	列斯普布利斯
+event_text	7737	阿波隆
+event_text	7738	阿尔捷姆斯拉夫
+event_text	7739	加夫里尔
+event_text	7740	叶利扎尔
+event_text	7741	约瑟夫
+event_text	7742	克利梅尔
+event_text	7743	拉夫连季
+event_text	7744	尼古拉
+event_text	7745	奥斯塔普
+event_text	7746	帕维尔
+event_text	7747	德米特里
+event_text	7748	萨瓦
+event_text	7749	费利克斯
+event_text	7750	埃马努伊尔
+event_text	7751	雅罗波尔克
+event_text	7752	雅罗斯拉夫
+event_text	7753	瓦西里
+event_text	7754	伊斯坎德尔
+event_text	7755	您的私人{0}管家
+event_text	7756	生日
+event_text	7757	维多利亚
+event_text	7758	妮娜
+event_text	7759	涅丽达
+event_text	7760	乌利亚娜
+event_text	7761	阿斯特拉
+event_text	7762	布罗尼斯拉娃
+event_text	7763	瓦西丽莎
+event_text	7764	伊万卡
+event_text	7765	伊尤莉娅
+event_text	7766	佐斯特里亚拉
+event_text	7767	扎拉
+event_text	7768	拉拉
+event_text	7769	玛丽娜
+event_text	7770	米娅
+event_text	7771	姆拉达
+event_text	7772	尼拉萨
+event_text	7773	罗扎
+event_text	7774	罗格涅特里娅
+event_text	7775	谢韦里娜
+event_text	7776	索菲娅
+event_text	7777	乌斯蒂娜
+event_text	7778	弗拉德伦
+event_text	7779	列斯普布利斯
+event_text	7780	阿波隆
+event_text	7781	阿尔捷姆斯拉夫
+event_text	7782	加夫里尔
+event_text	7783	叶利扎尔
+event_text	7784	约瑟夫
+event_text	7785	克利梅尔
+event_text	7786	拉夫连季
+event_text	7787	尼古拉
+event_text	7788	奥斯塔普
+event_text	7789	帕维尔
+event_text	7790	德米特里
+event_text	7791	萨瓦
+event_text	7792	费利克斯
+event_text	7793	埃马努伊尔
+event_text	7794	雅罗波尔克
+event_text	7795	雅罗斯拉夫
+event_text	7796	瓦西里
+event_text	7797	伊斯坎德尔
+event_text	7798	{2}，您吩咐我提醒您，您的伴侣 {1} 将在 <color=#8B0000>{3}{4}日</color> 迎来 {5}岁生日。该想想送什么礼物了。
+event_text	7799	{3}，您吩咐我提醒您，您的两个孩子 {1} 和 {2} 将在 <color=#8B0000>{4}{5}日</color> 年满 {6}岁。该给他们挑生日礼物了。
+event_text	7800	先生
+event_text	7801	女士
+event_text	7802	议席分配
+event_text	7803	{1}，您吩咐过我，是时候替家人安排些差事了。不妨看看，下次选举咱们能提名哪位家人参选。
+event_text	7804	提名妻子{0}参加下次选举
+event_text	7805	提名丈夫{0}参加下次选举
+event_text	7806	下次选举{0}不提名妻子
+event_text	7807	下次选举{0}不提名丈夫
+event_text	7808	妻子已拥有议席
+event_text	7809	丈夫已拥有议席
+event_text	7810	妻子已与您断了来往
+event_text	7811	丈夫已与您断了来往
+event_text	7812	提名儿子参加下次选举
+event_text	7813	下次选举{0}不提名儿子
+event_text	7814	儿子已拥有议席
+event_text	7815	儿子已与您断了来往
+event_text	7816	候选人须{0}年满21岁
+event_text	7817	提名女儿参加下次选举
+event_text	7818	下次选举{0}不提名女儿
+event_text	7819	女儿已拥有议席
+event_text	7820	女儿已与您断了来往
+event_text	7821	暂不采取行动
+event_text	7822	每有一名家人获得议席，便叠加一层「全家参政」修正
+event_text	7823	与各派系的关系
+event_text	7824	本党对各派系的影响力
+event_text	7825	我们一定全力争取胜选！
+event_text	7826	听您的……这就去办！
+event_text	7827	这件事以后再谈。
+event_text	7828	我们已经在准备提名了！
+event_text	7829	选举结果
+event_text	7830	{1}！选举结果已经送到您桌上了。您可以看看家里有谁当选。
+event_text	7831	我可要好好看看！
+event_text	7832	{2}选举委员会来函{0}应您的要求，现附上当选议员的家属名单：{1}
+event_text	7833	您的妻子
+event_text	7834	您的丈夫
+event_text	7835	当选议员。
+event_text	7836	当选议员。
+event_text	7837	您的儿子
+event_text	7838	您的女儿
+event_text	7839	您的家人此次无人当选议员。
+event_text	7840	求学之路
+event_text	7841	{1}！该为孩子的将来打算了。这里有一份大学名单，您看看想送儿子去哪所。
+event_text	7842	{1}！该为孩子的将来打算了。这里有一份大学名单，您看看想送女儿去哪所。
+event_text	7843	首都大学
+event_text	7844	政治学与国际关系学院{0}（原党校）
+event_text	7845	内务部学院
+event_text	7846	林业建设职业学校
+event_text	7847	牛津大学
+event_text	7848	剑桥大学
+event_text	7849	加州大学伯克利分校
+event_text	7850	耶鲁大学
+event_text	7851	莫斯科国立大学
+event_text	7852	索邦大学
+event_text	7853	学制三年。每年学费
+event_text	7854	毕业后获得的修正
+event_text	7855	<color=#0027FF>「首都大学」</color>{0}<color=#006400>党内资金：获得共和国预算的 0.5%{0}每个地区提供行政资源 +5.0{0}本党执政地区的外商投资环境 +0.5{0}本党执政地区的小企业经营环境 +0.5</color>
+event_text	7856	<color=#0027FF>「党校」</color>{0}<color=#006400>对盟党的影响力 +5.0{0}与盟党的关系 +0.8</color>{0}若本党掌管外交部：{0}<color=#006400>与各大国的关系 +0.8{0}对各大国的依赖度 −0.5{0}</color>
+event_text	7857	<color=#0027FF>「内务部学院」</color>{0}若本党掌管内务部或国防部：{0}<color=#006400>国防部和内务部的效率 +1.0{0}两部的腐败程度 −1.0</color>{0}<color=#800080>对军官俱乐部和黑手党的影响力 +5.0{0}与这两个派系的关系 +0.8</color>
+event_text	7858	<color=#0027FF>「林业建设职业学校」</color>{0}在本党执政的地区：{0}<color=#006400>贫困阶层的支持度 +1.0{0}贫困阶层的激进度 −1.0{0}</color>{0}<color=#8B0000>与家人的关系 −1.0</color>
+event_text	7859	<color=#0027FF>「牛津大学」</color>{0}在本党执政的地区：{0}<color=#006400>精英阶层的支持度 +1.0{0}精英阶层的激进度 −1.0{0}</color>{0}<color=#800080>对全国卡特尔协会和黑手党的影响力 +5.0{0}与这两个派系的关系 +5.0</color>
+event_text	7860	<color=#0027FF>「剑桥大学」</color>{0}在本党执政的地区：{0}<color=#006400>精英阶层的支持度 +1.0{0}精英阶层的激进度 −1.0{0}</color>{0}在本党执政的地区：{0}<color=#006400>腐败程度 −1.0{0}外商投资环境 +0.5</color>
+event_text	7861	<color=#0027FF>「加州大学伯克利分校」</color>{0}<color=#006400>对盟党的影响力 +5.0{0}与盟党的关系 +1.0</color>{0}若本党掌管教育部或各委员会：{0}<color=#006400>教育部和各委员会的效率 +1.0{0}教育部和各委员会的腐败程度 −1.0</color>
+event_text	7862	<color=#0027FF>「耶鲁大学」</color>{0}在本党执政的地区：{0}<color=#006400>中间阶层的支持度 +1.0{0}中间阶层的激进度 −1.0{0}{0}对盟党的影响力 +1.0{0}对各派系的影响力 +0.5{0}本党与西方的关系 +1.0</color>
+event_text	7863	<color=#0027FF>「莫斯科国立大学」</color>{0}<color=#006400>本党与俄罗斯的关系 +1.0{0}每个地区提供党内资源 +5.0{0}</color>{0}在本党执政的地区：{0}<color=#006400>少数民族的激进度 −1.0{0}分离主义情绪 −1.0</color>
+event_text	7864	<color=#0027FF>「索邦大学」</color>{0}在本党执政的地区：{0}<color=#006400>中间阶层的支持度 +1.0{0}中间阶层的激进度 −1.0</color>{0}{0}<color=#800080>对共和国女权联盟、反叛军和少数民族的影响力 +5.0{0}与这三个派系的关系 +5.0</color>
+event_text	7865	免学费
+event_text	7866	资金不足。{0}需要 1.5 万塞浦路斯镑。
+event_text	7867	资金不足。{0}需要 1 万塞浦路斯镑。
+event_text	7868	资金不足。{0}需要 2.5 万塞浦路斯镑。
+event_text	7869	放心，我们会把手续办妥，把材料送到该送的地方。
+event_text	7870	这件事以后再谈。
+event_text	7871	要继续读下去吗？
+event_text	7872	{1}！这一学年快结束了。{3}就读于<color=#0027FF>{2}</color>，下一学年的学费是<color=#8B0000>{4} 千塞浦路斯镑</color>。
+event_text	7873	您的儿子
+event_text	7874	您的女儿
+event_text	7875	缴纳下一学年学费
+event_text	7876	以后再说
+event_text	7877	就读院校
+event_text	7878	应缴学费
+event_text	7879	钱一定按时汇到！
+event_text	7880	这件事以后再谈。
+event_text	7881	爱您的儿子，{0}弗拉德伦
+event_text	7882	爱您的儿子，{0}列斯普布利斯
+event_text	7883	爱您的儿子，{0}阿波隆
+event_text	7884	爱您的儿子，{0}阿尔捷姆斯拉夫
+event_text	7885	爱您的儿子，{0}加夫里尔
+event_text	7886	爱您的儿子，{0}叶利扎尔
+event_text	7887	爱您的儿子，{0}约瑟夫
+event_text	7888	爱您的儿子，{0}克利梅尔
+event_text	7889	爱您的儿子，{0}拉夫连季
+event_text	7890	爱您的儿子，{0}尼古拉
+event_text	7891	爱您的儿子，{0}奥斯塔普
+event_text	7892	爱您的儿子，{0}帕维尔
+event_text	7893	爱您的儿子，{0}德米特里
+event_text	7894	爱您的儿子，{0}萨瓦
+event_text	7895	爱您的儿子，{0}费利克斯
+event_text	7896	爱您的儿子，{0}埃马努伊尔
+event_text	7897	爱您的儿子，{0}雅罗波尔克
+event_text	7898	爱您的儿子，{0}雅罗斯拉夫
+event_text	7899	爱您的儿子，{0}瓦西里
+event_text	7900	爱您的儿子，{0}伊斯坎德尔
+event_text	7901	爱您的女儿，{0}维多利亚
+event_text	7902	爱您的女儿，{0}妮娜
+event_text	7903	爱您的女儿，{0}涅丽达
+event_text	7904	爱您的女儿，{0}乌利亚娜
+event_text	7905	爱您的女儿，{0}阿斯特拉
+event_text	7906	爱您的女儿，{0}布罗尼斯拉娃
+event_text	7907	爱您的女儿，{0}瓦西丽莎
+event_text	7908	爱您的女儿，{0}伊万卡
+event_text	7909	爱您的女儿，{0}伊尤莉娅
+event_text	7910	爱您的女儿，{0}佐斯特里亚拉
+event_text	7911	爱您的女儿，{0}扎拉
+event_text	7912	爱您的女儿，{0}拉拉
+event_text	7913	爱您的女儿，{0}玛丽娜
+event_text	7914	爱您的女儿，{0}米娅
+event_text	7915	爱您的女儿，{0}姆拉达
+event_text	7916	爱您的女儿，{0}尼拉萨
+event_text	7917	爱您的女儿，{0}罗扎
+event_text	7918	爱您的女儿，{0}罗格涅特里娅
+event_text	7919	爱您的女儿，{0}谢韦里娜
+event_text	7920	爱您的女儿，{0}索菲娅
+event_text	7921	爱您的女儿，{0}乌斯蒂娜
+gui_text	2021	三月
+gui_text	2132	政治学与国际关系学院
+gui_text	2134	林业建设职业学校
+gui_text	2135	牛津大学
+gui_text	2136	剑桥大学
+gui_text	2137	加州大学伯克利分校
+gui_text	2140	索邦大学

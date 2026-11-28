@@ -55,7 +55,7 @@ class ActionTextTests(unittest.TestCase):
         for row, child in ((2141, '儿子'), (2142, '女儿')):
             tooltip = gui[row].format('\n', '余额充足', '大学甲', 2, 5)
             self.assertIn(child+'就读于<color=#0027FF>大学甲</color>', tooltip)
-            self.assertIn('2/3。每门学费：5 千镑', tooltip)
+            self.assertIn('已读完 2/3 学年，每学年学费为 5 千塞浦路斯镑', tooltip)
             self.assertTrue(tooltip.endswith('条件：\n余额充足'))
 
     def test_completed_propaganda_campaign_names_issuer_and_region(self):

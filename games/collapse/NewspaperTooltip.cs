@@ -38,13 +38,13 @@ internal static partial class SaveNameLayout
 
     public static void LimitNewspaperLineWidth(PopUpWindowManager tip)
     {
-        if (!NewspaperIsOpen()) return;
-        var paper = newspaperPanel.GetComponent<SpriteRenderer>();
+        Bounds page;
+        if (!TryPaperBounds(out page)) return;
         var camera = Camera.main;
-        if (!paper || !camera || !camera.orthographic) return;
+        if (!camera || !camera.orthographic) return;
         float halfWidth = camera.orthographicSize * camera.aspect;
         float center = camera.transform.position.x;
-        float side = Mathf.Max(paper.bounds.min.x - (center - halfWidth), center + halfWidth - paper.bounds.max.x);
+        float side = Mathf.Max(page.min.x - (center - halfWidth), center + halfWidth - page.max.x);
         // The stock drawing method uses a 20% panel minimum and adds 0.6 units
         // around the longest measured line. Set its width before it wraps.
         float room = (side - .045f * camera.orthographicSize) / Mathf.Abs(tip.transform.lossyScale.x);
@@ -57,15 +57,31 @@ internal static partial class SaveNameLayout
         RestorePaperTipScale();
         // The builder points this call at the game's original drawing method.
         tip.Show(text);
-        if (!NewspaperIsOpen() || !tip.is_visible) return;
+        Bounds page;
+        if (!tip.is_visible || !TryPaperBounds(out page)) return;
         Camera camera = Camera.main;
-        SpriteRenderer paper = newspaperPanel.GetComponent<SpriteRenderer>();
         SpriteRenderer background = tip.GetComponent<SpriteRenderer>();
-        if (!camera || !camera.orthographic || !paper || !background) return;
+        if (!camera || !camera.orthographic || !background) return;
 
-        Bounds page = paper.bounds;
+        var letters = tip.textMesh.GetComponent<Renderer>();
         Bounds box = background.bounds;
-        box.Encapsulate(tip.textMesh.GetComponent<Renderer>().bounds);
+        if (!NewspaperIsOpen()) {
+            // The native line-height estimate falls short on long Chinese lists.
+            // Measure the finished text and keep clearance on both vertical edges.
+            float inset = camera.orthographicSize * .009f;
+            Bounds ink = letters.bounds;
+            if (ink.min.y < box.min.y + inset || ink.max.y > box.max.y - inset) {
+                float missing = ink.size.y + 2f * inset - box.size.y;
+                if (missing > 0f) {
+                    var size = background.size;
+                    size.y += missing / Mathf.Abs(background.transform.lossyScale.y);
+                    background.size = size;
+                    box = background.bounds;
+                }
+                letters.transform.position += Vector3.up * (box.center.y - ink.center.y);
+            }
+        }
+        box.Encapsulate(letters.bounds);
         if (box.size.x <= 0f || box.size.y <= 0f) return;
         float halfH = camera.orthographicSize;
         float halfW = halfH * camera.aspect;
@@ -93,7 +109,7 @@ internal static partial class SaveNameLayout
             paperTipScale = tip.transform.localScale;
             tip.transform.localScale = new Vector3(paperTipScale.x * factor, paperTipScale.y * factor, paperTipScale.z);
             box = background.bounds;
-            box.Encapsulate(tip.textMesh.GetComponent<Renderer>().bounds);
+            box.Encapsulate(letters.bounds);
         }
         Rect area = spaces[best];
         float x = Mathf.Clamp(box.min.x, area.xMin, area.xMax - box.size.x);

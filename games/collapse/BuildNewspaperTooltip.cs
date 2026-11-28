@@ -12,6 +12,7 @@ static partial class BuildSaveNameLayout
             helpers.Fields.Add(new FieldDefinition(name, field.Attributes, ImportType(game, field.FieldType)));
         }
         var active = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "NewspaperIsOpen"));
+        AddDialogPaperBounds(game, source, helpers);
         CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "RestorePaperTipScale"));
         var clear = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "ResetPaperTip"));
         var open = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "OpenNewspaperPage"));
@@ -73,5 +74,6 @@ static partial class BuildSaveNameLayout
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Call, close);
         il.Emit(OpCodes.Ret);
+        PatchPanelTextLayout(game, source, helpers, eventTip);
     }
 }

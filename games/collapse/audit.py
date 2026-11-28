@@ -105,7 +105,8 @@ def audit(tables):
                     trait_buttons[line-8302] = compact(zh)
             elif key == 'gui_text' and 760 <= line <= 779:
                 trait_headings[line-760] = compact(plain(zh.split('|',1)[0]))
-            if bool(base.strip())!=bool(zh.strip()):
+            family = collapse.family_dialog_row(key, line)
+            if bool(ru.strip() if family else base.strip()) != bool(zh.strip()):
                 hard['blank_shift'].append(ref)
             if re.search(r'[{}]',FORMAT.sub('',zh)):
                 hard['broken_format'].append(ref)
@@ -133,7 +134,7 @@ def audit(tables):
             else:
                 if '{0}' in zh and '{0}' not in en and '{0}' not in ru:
                     candidates['extra_zero_field'].append(ref)
-                if field_set(en)!=field_set(zh):
+                if field_set(ru if family else en)!=field_set(zh):
                     hard['format_ids_or_specifiers'].append(ref)
             if not rich_ok(zh):
                 hard['rich_text_nesting'].append(ref)

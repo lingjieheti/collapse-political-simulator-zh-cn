@@ -138,6 +138,11 @@ def load_edits():
         out[key][num] = value
     return out
 
+def family_dialog_row(table, line):
+    # These English and Workshop slots are empty in build 24949409. The
+    # original Russian table has the family story at the same indices.
+    return table == 'event_text' and (7601 <= line <= 7800 or 7802 <= line <= 7921)
+
 def load_guide_sections():
     sections = {}
     path = Path(__file__).with_name('guide_sections.tsv')
@@ -296,7 +301,8 @@ def build(pristine, upstream):
         if key == 'system_text':
             revise_guides(rows, load_guide_sections())
         rows = [wrap_chinese(party_name(row, original)) for row, original in zip(rows, orig)]
-        require(all(bool(a.strip()) == bool(b.strip()) for a,b in zip(base,rows)), f'空行结构改变：{key}')
+        require(all(bool(b.strip()) == (bool(a.strip()) or family_dialog_row(key, n))
+                    for n,(a,b) in enumerate(zip(base,rows), 1)), f'空行结构改变：{key}')
         text = ('\n'.join(rows) + ('\n' if eng.endswith(b'\n') else '')).encode()
         summary[key] = (count, sum(a != b for a,b in zip(base,rows)))
         raw_name = key.encode()
