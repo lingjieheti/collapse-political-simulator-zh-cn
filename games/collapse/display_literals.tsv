@@ -1,0 +1,56 @@
+CountryController	OneShotEffectsForActionButton	15	60f96b69a799af39964a70e85f17e98d757a19bee9dd7bbd4203154f87a168d2	或总理
+DialogEventController	RepaintAll	1	a800f815885374e8b6415b2f17c1de1f7ff723711132c5a2813c65944423f004	 <color=red>（与盟党的关系−25.0）</color>
+EndingController	Twentyzerofour	36	c24a797e4b71466ebb5c7b7b1433ddd97eee4737fb738d0834bb620b7aeb607c	伊柳欣
+EndingController	Twentyzerofour	37	24a4b9157a835ad5d5e8e085081161649bfe34cef684293118f2ed6fbfdad2a2	列别德
+EndingController	Twentyzerofour	38	d38a779dd5f8bf2cd6b142f8787a8fd7117e56f0a009b790cef20c7b6a6946f0	斯科科夫
+EndingController	Twentyzerofour	40	8d131df1684dda891b8c4a1c52b0f67ea14c137cf24b2f0cc58e52f27cbabcc4	普京
+MinistryController	BuildKomitet10Effects	2	c9af542a7751b81a0d92b8d5214edbbf4644a0f43715ca7e9c9436905ecb42e4	（目标地区由盟党执政时）
+MinistryController	BuildKomitet13Effects	6	e23476e73860978ba0eb30b9e823e843dababcd38a5d560545af524739330e1a	：推迟3个月
+MinistryController	BuildKomitet13Effects	8	66abef7b0adfd24e5df24b3247808ef2e114e39523752858d1d6fbd7d0bab763	：提前3个月
+MinistryController	BuildPeriodicEffects	705	75389346c55c911915b8cb56bcd6598348fcbcc67d914bb339f276d4cea7f81f	（军官俱乐部与共和国爱国教会）
+MinistryController	BuildPeriodicEffects	707	75389346c55c911915b8cb56bcd6598348fcbcc67d914bb339f276d4cea7f81f	（军官俱乐部与共和国爱国教会）
+MinistryController	BuildPeriodicEffects	709	94ed5ec036802eaed24a6b7d98d9a5e52466e92c4fe7b58f1b9bf039009ecb77	（本党执政地区）
+MinistryController	BuildPeriodicEffects	712	bfd008c5043f17b1b5eade4961ab45c562e9862032978da1e8e1105bcab41c91	（其他党执政地区）
+MinistryController	BuildPeriodicEffects	721	bfd008c5043f17b1b5eade4961ab45c562e9862032978da1e8e1105bcab41c91	（其他党执政地区）
+MinistryController	BuildPeriodicEffects	724	bfd008c5043f17b1b5eade4961ab45c562e9862032978da1e8e1105bcab41c91	（其他党执政地区）
+MinistryController	BuildPremierEffects	10	e23476e73860978ba0eb30b9e823e843dababcd38a5d560545af524739330e1a	：推迟3个月
+MinistryController	BuildPremierEffects	12	66abef7b0adfd24e5df24b3247808ef2e114e39523752858d1d6fbd7d0bab763	：提前3个月
+MinistryController	BuildSelhoz7Effects	2	1bd4a1a2dc2dc50eccef288b41eff54e530b449fceea204aa9691f72424280ed	（农业部，每月持续）
+MinistryController	BuildSelhoz7Effects	4	a66925f489e41e9e4660e213659826cdb3b02b04d9e8855cba2b82b6e43e92ec	（南部地区，每月）
+MinistryController	BuildSelhoz7Effects	7	a66925f489e41e9e4660e213659826cdb3b02b04d9e8855cba2b82b6e43e92ec	（南部地区，每月）
+MinistryController	BuildSelhoz7Effects	10	a66925f489e41e9e4660e213659826cdb3b02b04d9e8855cba2b82b6e43e92ec	（南部地区，每月）
+StatisticsPersonalityController	BuildChildEffectLine	1	4ece26340ab08ee5a8b6b4ef527774f564986b338be945cb9c1a87f98145a064	年龄：
+StatisticsPersonalityController	BuildChildEffectLine	3	b6bf6a36dc5699a21d3cd27dc78954a55354cd3fa7650b0e89f94b07b80994a4	岁\n
+StatisticsPersonalityController	BuildChildEffectLine	5	1d70892a622ba45cd7bda23286735f2711bb8c6a30a679f15030e997f27f87fc	年满22岁仍 无业。 各地区 中间 阶层 对本党的 支持 度每月 降低1.0。
+StatisticsPersonalityController	BuildChildEffectLine	7	f015d543e1e0b4dc934567e5e51614d3591571be4f6ddea0be7c1453175191ff	尚未 任职， 年纪 还小。
+StatisticsPersonalityController	BuildChildEffectLine	9	8293e02479d6993951eef0986797ce7ccfd2f049e256b4fc346922022011c6a5	初任 文员。 行政 资源 每月 增加0.2。
+StatisticsPersonalityController	BuildChildEffectLine	11	7f2b01d985aee7539c53a0889ec20a25eafc3fc5d60e69c358db920671afe579	事业 有成。 行政 资源 每月 增加0.5。
+StatisticsPersonalityController	BuildChildEffectLine	13	59cfbde51f5298748508935ded7544efdfd59559cd1981169ef30b9388b9965e	已从 政。 家族 议员 增加1人， 本党 在地方 也会 受益。
+StatisticsPersonalityController	BuildChildEffectLine	15	1ac0afd9521de7e32c69441dd9af2b42e1b2e8ad0c3afa942bf284088daa9339	已断绝 亲子 关系。 这名 子女 今后 不再 带来 加成， 也不会 触发 事业 事件。
+StatisticsPersonalityController	BuildChildEffectLine	17	61f436c88d01e54ae094cb213d21deacc9a7a29944b1713e8939c5c6319891ec	正在上学。
+StatisticsPersonalityController	BuildChildEffectLine	19	3238fcb06942ef2fe031f12cd32c8b96c61e670a1f10aea1adeef5bcdf608b33	正在上大学。
+StatisticsPersonalityController	BuildChildEffectLine	21	4c09023e0ffc128ce5a72738f2f7206533053d1bc1609561b2949f4b57bc362e	顺利 毕业。 中间 阶层 对本党的 支持 获得 一次性 提升。
+StatisticsPersonalityController	BuildChildEffectLine	23	3b7ba54dd844a555d220cda1f4bee4d0e99168734ec577672e2c04a309a4253c	因丑闻 被开除。 各地区 中间 阶层 对本党的 支持 度每月 降低2.0。
+StatisticsPersonalityController	BuildChildEffectLine	25	61bc9035290c3ee872d5ac881e669bbb06eac1269143761fcd1e78443d3418fa	与你 关系 紧张。
+StatisticsPersonalityController	BuildChildEffectLine	27	696a722524b612b4c0076bb9f2e6003e6522993944786c237f2c17b52383e778	已与 你彻底 疏远。 这会 阻断 该子女的 事业 事件， 也会 加剧 家庭 矛盾。
+StatisticsPersonalityController	BuildFriendEffectLine	1	1b69a16fb62c5ba9e472880faddcab369be68fe852a12f3e95f5cb24e1074bd9	目前 没有 政界 好友。
+StatisticsPersonalityController	BuildFriendEffectLine	3	e12939d79ec133f9b6b7e6e570145300d1b9c9fd8777b6e55ecf3fb2b78cdc38	与好友 交恶。 生意 每月 带来的 收入 已经 中断。
+StatisticsPersonalityController	BuildFriendEffectLine	5	6a59d3121adbe633e3316091b19d8088bb148e7d250bc6842ceabf9314fc7946	生意 正常 经营。 每月 增加0.1行政 资源， 收入 随经营 规模 而定。
+StatisticsPersonalityController	BuildFriendEffectLine	7	55f66e33a6e6ded78596c283b32642797c1e175ef0ff3b0ba285d3be55790ac3	生意 兴隆。 每月 增加0.5行政 资源， 生意 收入 也有 所增加。
+StatisticsPersonalityController	BuildFriendEffectLine	9	f58f7fc1a5568acd3b8a5c1040892c494b275cfbbd3d7346806ba42353022918	卷入 腐败 丑闻。 每月 增加0.5行政 资源， 各地区 贫困 阶层 对本党的 支持 度每月 降低0.5。
+StatisticsPersonalityController	BuildPlayerEffectLine	1	2a623c6dc517ad0fefb3bc39e785c9d376fd9c388c4765cee96f9267f45db07d	派系 集会 获得的 支持 乘以{0:0.00}。 事件 中每次 选择 “指控”， 党内 团结 度{1:+0.0;-0.0;0.0}、 行政 资源{2:+0.0;-0.0;0.0}， 各地 对本党的 支持 也会 变化。
+StatisticsPersonalityController	BuildPlayerEffectLine	3	898f701aeac7e7d17acd8b74f2fb874d857125181a4294af7f88fffe492f0c52	本党 掌管的 每个 部委， 效率 每月{0:+0.0;-0.0;0.0}。
+StatisticsPersonalityController	BuildPlayerEffectLine	5	1b4a564d4eb7b0d738de77e1881db6f330f2e0ed7b9260a055a272dcb4afb8d3	党内 团结 度每月{0:+0.0;-0.0;0.0}。
+StatisticsPersonalityController	BuildPlayerEffectLine	7	a82b43ee15b534ba20eba2ec963f779292868d2e013e50185aaa2042a488b018	行政 资源 每月{0:+0.0;-0.0;0.0}。
+StatisticsPersonalityController	BuildPlayerEffectLine	9	789a3c58163d51d353ecef39e2e5f55bbf84aaba2042a4405b8fde23fdfa7120	体弱。 累计 约20次行动 后， 领导人 可能 病倒， 本党 一个 部委的 效率 降低10.0。 在党 务页 悬停 于政党 控制 信息 处可 查看 疲劳。
+StatisticsPersonalityController	BuildPlayerEffectLine	11	41f16e7f44ce4c5ba77607c62fac7917365788d2f8afe4254af23313232a5110	健康 欠佳。 累计 约40次行动 后， 领导人 可能 病倒， 本党 一个 部委的 效率 降低10.0。 疲劳 可在党 务页 查看。
+StatisticsPersonalityController	BuildPlayerEffectLine	13	8584a4e54a955eb94c3e798eb0b9a25b8b6194323673779968d06a052d5e9ee0	健康 一般。 累计 约80次行动 后， 领导 人才 可能 病倒， 本党 一个 部委的 效率 将降低10.0。 疲劳 可在党 务页 查看。
+StatisticsPersonalityController	BuildPlayerEffectLine	15	9a5c558bfc12d79ad7665a4cc97d5e8d49d66aa58f712732784fd591ca5089ad	身体 强健。 领导人 不会 触发 生病 事件。
+StatisticsPersonalityController	BuildPlayerEffectLine	17	b8d0ea6a849ae19ae0ac3f447c4bffccddde3b5f9ab30194dc73138e30ac93ed	家庭 亲密。 多次 在家庭 与事业 之间 选择了 家庭， 子女的 结局 更好， 事业 结局 会受 影响。 只有 这类 抉择 才会 改变 家庭 亲密 度。
+StatisticsPersonalityController	BuildPlayerEffectLine	19	b5548403a038f95b2bc1169efcb4d8a94fdf7f6dc707b226616ef767b655f785	家庭 疏远。 多次 在家庭 与事业 之间 选择了 事业， 事业 结局 更好， 子女的 结局 会受 影响。 只有 这类 抉择 才会 改变 家庭 亲密 度。
+StatisticsPersonalityController	BuildPlayerEffectLine	21	00c851e49904990438a415513f1af78ac609baa6b4e737f40d953638d4dd1cab	家庭 关系 平稳。 亲密 度不会 影响 最终 结局。
+StatisticsPersonalityController	BuildSpouseEffectLine	1	51b6fff6daf10e9cce4f90f5e72c21ef78ad88e03567b3750da3caac8d9bf794	伴侣 坚定 支持 你。 党内 团结 度每月 增加0.5。
+StatisticsPersonalityController	BuildSpouseEffectLine	3	54130d977fcf323b00bd15ba6f800ba02195931bf543511890d3f15b4b0ce294	家庭 关系 平稳， 各项 指标 保持 不变。
+StatisticsPersonalityController	BuildSpouseEffectLine	5	739752800568137bc130d3719e338bb55bf023b130aa9b48d951cecba1e18fb8	伴侣 日渐 疏远。 党内 团结 度每月 降低0.5， 近期 可能 出现 家庭 危机。
+StatisticsPersonalityController	BuildSpouseEffectLine	7	32707259cf5257be911a6c07865aeb8153dc784586ddf1215c2bc0458f52ce80	伴侣 转投 反对派。 实力 最强的 反对党 每月 增加0.5党内 团结 度和1.0行政 资源。
+StatisticsPersonalityController	BuildSpouseEffectLine	9	51051e162f05677b9d7d4ae69e9f8be46d9c2076c9428da0e3d1e883533bdaba	离婚 时精英 阶层 对本党的 支持 度一次性 降低20。 再婚 前， 家庭 事件 暂停。

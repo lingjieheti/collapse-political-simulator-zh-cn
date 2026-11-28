@@ -137,6 +137,17 @@ internal static class SaveNameLayout
                language.language == SystemLanguage.English && OwnTranslation();
     }
 
+    public static string DisplayLiteral(string original, string chinese)
+    {
+        return ChineseHud() ? chinese : original;
+    }
+
+    public static void ShowInitialUploadProgress(TextMesh label)
+    {
+        if (ChineseHud() && label != null)
+            label.text = string.Format(LanguageManager.inst.gui_text[1914], 0);
+    }
+
     public static object PledgeThreshold(int raw)
     {
         if (ChineseHud()) return raw / 10f;

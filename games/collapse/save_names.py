@@ -9,7 +9,7 @@ import zipfile
 HERE = Path(__file__).resolve().parent
 FILE = 'Managed/Assembly-CSharp.dll'
 ORIGINAL = 'b421226acdfd29f27f64758378b0ab94af76f89566d9ad1e9280df913c8646ef'
-PATCHED = 'cc4b32894f898865db235db8a52040ff307937d2e5b31b60905c8c09d404e7ba'
+PATCHED = '2bc44551b71a7c10fd0aa62c1d0c9e17e765d90f3f35c49df1fb4ac208452361'
 CECIL = 'd2a23832aaa948ba9a01acc42b5726e34c5f995958f1b30d45c0e7c70b3a72d5'
 
 
@@ -48,7 +48,7 @@ def build(original, managed):
              '/out:'+str(helper), *('/r:'+str(p) for p in [*references,source]), HERE/'SaveNameLayout.cs'])
         run([compiler, '/nologo', '/codepage:65001', '/optimize+', '/r:'+str(work/'Mono.Cecil.dll'),
              '/out:'+str(builder), HERE/'BuildSaveNameLayout.cs'])
-        run([builder,source,helper,target,managed])
+        run([builder,source,helper,target,managed,HERE/'display_literals.tsv'])
         out = target.read_bytes()
         if hashlib.sha256(out).hexdigest() != PATCHED:
             raise ValueError('本地生成的游戏界面组件与发行版本不一致。')

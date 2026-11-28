@@ -2,6 +2,8 @@
 
 适用于 Windows Steam **Build 24949409**（App 990260）。安装器用玩家本机的游戏和工坊汉化生成资源，逐行应用校订，并对整套中文文本处理断行和排版。字体使用仓库提供的 Nostal UI SC 常规与半粗两个字重。
 
+v1.2.8 在 173 条文本修订外，补译了人物和部委效果等 56 处游戏程序里的文字。工坊上传页从打开时起就显示中文进度。[修订项目与核验范围](COMMUNITY-1.2.8.md)
+
 ## 安装与还原
 
 1. 从本游戏的发行页下载文件名以 `-Setup.exe` 结尾的 Windows 安装器。安装器内含运行环境。[下载独立安装器](https://github.com/lingjieheti/collapse-political-simulator-zh-cn/releases/latest)

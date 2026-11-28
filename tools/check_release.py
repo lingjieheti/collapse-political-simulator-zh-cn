@@ -85,6 +85,8 @@ def check_collapse_and_fonts(chars):
     for entries in edits.values():
         for value in entries.values():
             chars.update(text_line(value))
+    for line in (folder / "display_literals.tsv").read_text("utf-8").splitlines():
+        chars.update(text_line(line.split("\t")[4]))
     for sections in installer["load_guide_sections"]().values():
         for section in sections.values():
             chars.update(text_line(section))

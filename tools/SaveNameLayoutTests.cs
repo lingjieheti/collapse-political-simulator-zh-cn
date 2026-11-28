@@ -66,7 +66,7 @@ class LanguageManager
 {
     public static LanguageManager inst;
     public SystemLanguage language;
-    public string[] gui_text = new string[1800];
+    public string[] gui_text = new string[2777];
 }
 class SaveNameTests
 {
@@ -120,6 +120,11 @@ class SaveNameTests
         string positive = "{0} <color=#99FF73>(+{1})</color>";
         string negative = "{0} <color=#FF001D>({1})</color>";
         LanguageManager.inst = new LanguageManager { language = SystemLanguage.English };
+        LanguageManager.inst.gui_text[1914] = "Steam 上传进度：{0}/11";
+        var uploadProgress = new TextMesh();
+        SaveNameLayout.ShowInitialUploadProgress(uploadProgress);
+        Check(uploadProgress.text == "Steam 上传进度：0/11");
+        Check(SaveNameLayout.DisplayLiteral("Native", "中文") == "中文");
         Check(String.Format(SaveNameLayout.HudChangeFormat(zero), "行政资源", 0, "：25").Contains("上月变化：0"));
         Check(String.Format(SaveNameLayout.HudChangeFormat(positive), "支持率", 5).EndsWith("<color=#99FF73>+5</color>"));
         Check(String.Format(SaveNameLayout.HudChangeFormat(negative), "支持率", -5).EndsWith("<color=#FF001D>-5</color>"));
@@ -166,6 +171,9 @@ class SaveNameTests
             Check(SaveNameLayout.FundingPreview("old", game, cost) == "公共对话委员会预算：−" + cost);
         }
         LanguageManager.inst.language = SystemLanguage.Russian;
+        uploadProgress.text = "native";
+        SaveNameLayout.ShowInitialUploadProgress(uploadProgress);
+        Check(uploadProgress.text == "native" && SaveNameLayout.DisplayLiteral("Native", "中文") == "Native");
         Check(SaveNameLayout.CoalitionTemplate(neutral, game) == neutral);
         Check(SaveNameLayout.PledgeThreshold(527).Equals(527));
         Check(SaveNameLayout.BusinessProjectRelation(5) == 5);

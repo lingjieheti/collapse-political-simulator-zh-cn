@@ -156,6 +156,31 @@ static class BuildSaveNameLayout
         il.InsertBefore(fillArgs, Instruction.Create(OpCodes.Call, formatter));
     }
 
+    static void PatchDisplayLiterals(ModuleDefinition module, MethodDefinition translate, string path)
+    {
+        // Read the original method once. Later inserted Chinese literals must not alter its indices.
+        foreach (var group in File.ReadLines(path).Select(line => line.Split('\t')).GroupBy(fields => new { Type = fields[0], Method = fields[1] })) {
+            var method = module.GetType(group.Key.Type).Methods.Single(m => m.Name == group.Key.Method);
+            foreach (var branch in method.Body.Instructions.Where(i => i.OpCode.OperandType == OperandType.ShortInlineBrTarget)) {
+                string longName = branch.OpCode.Code.ToString().Replace("_S", "");
+                branch.OpCode = (OpCode)typeof(OpCodes).GetField(longName).GetValue(null);
+            }
+            var literals = method.Body.Instructions.Where(i => i.OpCode == OpCodes.Ldstr).ToArray();
+            var il = method.Body.GetILProcessor();
+            foreach (var fields in group) {
+                var native = literals[int.Parse(fields[2], System.Globalization.CultureInfo.InvariantCulture)];
+                var bytes = System.Text.Encoding.UTF8.GetBytes((string)native.Operand);
+                using (var sha = System.Security.Cryptography.SHA256.Create()) {
+                    var hash = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
+                    if (!String.Equals(hash, fields[3], StringComparison.Ordinal)) throw new InvalidDataException("Unexpected display literal " + group.Key.Type + "." + group.Key.Method);
+                }
+                var replace = Instruction.Create(OpCodes.Ldstr, fields[4].Replace("\\n", "\n"));
+                il.InsertAfter(native, replace);
+                il.InsertAfter(replace, Instruction.Create(OpCodes.Call, translate));
+            }
+        }
+    }
+
     static void Main(string[] args)
     {
         using (var resolver = new DefaultAssemblyResolver()) {
@@ -220,6 +245,16 @@ static class BuildSaveNameLayout
 
             CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "OwnTranslation"));
             CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "ChineseHud"));
+            var display = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "DisplayLiteral"));
+            PatchDisplayLiterals(game, display, args[4]);
+            var upload = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "ShowInitialUploadProgress"));
+            var creator = game.GetType("ModCreator");
+            var awake = creator.Methods.Single(m => m.Name == "Awake");
+            var first = awake.Body.Instructions.First();
+            var uploadIl = awake.Body.GetILProcessor();
+            uploadIl.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));
+            uploadIl.InsertBefore(first, Instruction.Create(OpCodes.Ldfld, creator.Fields.Single(f => f.Name == "loadingText")));
+            uploadIl.InsertBefore(first, Instruction.Create(OpCodes.Call, upload));
             var threshold = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "PledgeThreshold"));
             var relation = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "BusinessProjectRelation"));
             PatchEconomicTooltips(game, threshold, relation);
