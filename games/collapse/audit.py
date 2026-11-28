@@ -121,6 +121,11 @@ def audit(tables):
                 # Its English {0} was intended as a line break but is never formatted.
                 if FORMAT.search(zh):
                     hard['unexpanded_ministry_action'].append(ref)
+            elif key == 'event_text' and line == 4987:
+                # Event 529 passes the party, a line break, and the foreign
+                # ministry's own reaction. The Russian template uses all three.
+                if FORMAT.findall(zh) != [('1',''), ('0',''), ('2','')]:
+                    hard['iraq_statement_fields'].append(ref)
             elif key == 'gui_text' and line in (1761, 1762):
                 expected = [('5',''), ('0','')] if line == 1761 else [('0','')]
                 if FORMAT.findall(zh) != expected:

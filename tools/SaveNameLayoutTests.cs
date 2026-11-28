@@ -212,8 +212,89 @@ class SaveNameTests
         Check(SaveNameLayout.VotingVetoCost(1000).Equals(1000) && SaveNameLayout.VotingThreshold(50).Equals(50));
         LanguageManager.inst=null;
     }
+    static void EndingHooks([System.Runtime.CompilerServices.CallerFilePath] string testFile = "")
+    {
+        // The public test also runs without a Steam installation. Read the
+        // actual builder, so a missing call to its ending patch fails on CI.
+        string repo = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(testFile));
+        string builder = System.IO.File.ReadAllText(System.IO.Path.Combine(repo, "games", "collapse", "BuildSaveNameLayout.cs"));
+        Check(builder.Contains("PatchEndingLayout(game, source, helpers);"));
+        Check(builder.Contains("game.GetType(\"EndingController\")"));
+        Check(builder.Contains("PatchIraqEvent(game);"));
+        foreach (string name in new[] { "ApplyEndingLayout", "SetEndingVisibleLines", "EndingTextTop" })
+            Check(builder.Contains("source.Methods.Single(m => m.Name == \"" + name + "\")"));
+
+        string game = Environment.GetEnvironmentVariable("COLLAPSE_TEST_GAME");
+        if (String.IsNullOrEmpty(game)) return;
+        string managed = System.IO.Path.Combine(game, "PoliticalSimulator_Data", "Managed");
+        var asm = System.Reflection.Assembly.ReflectionOnlyLoadFrom(System.IO.Path.Combine(managed, "Assembly-CSharp.dll"));
+        ResolveEventHandler resolve = delegate(object sender, ResolveEventArgs args) {
+            string file = System.IO.Path.Combine(managed, new System.Reflection.AssemblyName(args.Name).Name + ".dll");
+            return System.IO.File.Exists(file) ? System.Reflection.Assembly.ReflectionOnlyLoadFrom(file)
+                                               : System.Reflection.Assembly.ReflectionOnlyLoad(args.Name);
+        };
+        AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += resolve;
+        try {
+            IraqEventTemplates(asm);
+            var ending = asm.GetType("EndingController", true);
+            var helper = asm.GetType("SaveNameLayout", true);
+            var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            byte[] awake = ending.GetMethod("Awake", flags).GetMethodBody().GetILAsByteArray();
+            byte[] repaint = ending.GetMethod("RepaintButtons", flags).GetMethodBody().GetILAsByteArray();
+            var setLines = EndingInstruction(0x28, helper.GetMethod("SetEndingVisibleLines"));
+            var fixTop = EndingInstruction(0x28, helper.GetMethod("EndingTextTop"));
+            var saveTop = EndingInstruction(0x7d, ending.GetField("max_textmesh_position_y", flags));
+            var getSelectable = EndingInstruction(0x7b, ending.GetField("can_select", flags));
+            var apply = EndingInstruction(0x28, helper.GetMethod("ApplyEndingLayout"));
+            // Both normal and early endings pass the original can_select flag.
+            byte[] expectedEnd = new byte[] { 0x02, 0x02 }.Concat(getSelectable).Concat(apply).Concat(new byte[]{ 0x2a }).ToArray();
+            Check(repaint.Skip(repaint.Length - expectedEnd.Length).SequenceEqual(expectedEnd));
+            Check(awake.Take(setLines.Length + 1).SequenceEqual(new byte[]{ 0x02 }.Concat(setLines)));
+            var top = fixTop.Concat(saveTop).ToArray();
+            Check(Enumerable.Range(0, awake.Length - top.Length + 1).Count(i => awake.Skip(i).Take(top.Length).SequenceEqual(top)) == 1);
+        }
+        finally { AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= resolve; }
+    }
+
+    static void IraqEventTemplates(System.Reflection.Assembly game)
+    {
+        var all = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
+                  System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance;
+        var result = game.GetType("EventsScript", true).GetMethod("GetEventResultAndProcessIt2", all);
+        byte[] il = result.GetMethodBody().GetILAsByteArray();
+        int table = game.GetType("LanguageManager", true).GetField("event_text", all).MetadataToken;
+        var lookups = new List<KeyValuePair<int,int>>();
+        for (int i = 0; i + 11 < il.Length; ++i) {
+            // ldfld event_text; ldc.i4 key; ldelem.ref
+            if (il[i] != 0x7b || BitConverter.ToInt32(il, i + 1) != table || il[i+5] != 0x20 || il[i+10] != 0x9a) continue;
+            int key = BitConverter.ToInt32(il, i + 6);
+            if (key == 4944 || (key >= 4984 && key <= 4987))
+                lookups.Add(new KeyValuePair<int,int>(key, i));
+        }
+        int first = lookups.Single(pair => pair.Key == 4984).Value;
+        int last = lookups.Single(pair => pair.Key == 4987).Value;
+        var branch = lookups.Where(pair => pair.Value >= first && pair.Value <= last).ToArray();
+        Check(branch.Select(p => p.Key).SequenceEqual(new[]{4984,4986,4985,4987}));
+        for (int i = 0; i < branch.Length; ++i) {
+            // All four pass a newline; only the party's statements go on to
+            // load the party name and the government's independent response.
+            int next = branch[i].Value + 18;
+            if (i % 2 == 1) { Check(il[next] == 0x7e); continue; }
+            Check(il[next] == 0x28);
+            var format = result.Module.ResolveMethod(BitConverter.ToInt32(il, next+1));
+            Check(format.Name == "Format" && format.GetParameters().Length == 2);
+        }
+    }
+
+    static byte[] EndingInstruction(byte opcode, System.Reflection.MemberInfo target)
+    {
+        Check(target != null);
+        return new byte[]{ opcode }.Concat(BitConverter.GetBytes(target.MetadataToken)).ToArray();
+    }
+
     static void Main()
     {
+        EndingHooks();
         Diplomacy();
         VotingPanels();
         var paragraph = new TextMesh { text="正文", visualHeight=4f };

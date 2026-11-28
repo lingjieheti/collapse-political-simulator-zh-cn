@@ -62,6 +62,41 @@ static partial class BuildSaveNameLayout
         return target;
     }
 
+    static void PatchEndingLayout(ModuleDefinition game, TypeDefinition source, TypeDefinition helpers)
+    {
+        var ending = game.GetType("EndingController");
+        var repaint = ending.Methods.Single(m => m.Name == "RepaintButtons" && !m.HasParameters);
+        var code = repaint.Body.Instructions;
+        var exit = code.Single(i => i.OpCode == OpCodes.Ret);
+        if (exit != code.Last() ||
+            !code.Any(i => i.OpCode == OpCodes.Callvirt && ((MethodReference)i.Operand).Name == "SetMode"))
+            throw new InvalidDataException("Unexpected ending button repaint");
+
+        var awake = ending.Methods.Single(m => m.Name == "Awake");
+        var setup = awake.Body.GetILProcessor();
+        var y = awake.Body.Instructions.Single(i => i.OpCode == OpCodes.Stfld &&
+            ((FieldReference)i.Operand).Name == "max_textmesh_position_y");
+        if (y.Previous.OpCode != OpCodes.Ldfld ||
+            ((FieldReference)y.Previous.Operand).FullName != "System.Single UnityEngine.Vector3::y")
+            throw new InvalidDataException("Unexpected ending text position");
+        var top = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "EndingTextTop"));
+        var lines = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "SetEndingVisibleLines"));
+        var start = awake.Body.Instructions[0];
+        setup.InsertBefore(start, Instruction.Create(OpCodes.Ldarg_0));
+        setup.InsertBefore(start, Instruction.Create(OpCodes.Call, lines));
+        setup.InsertBefore(y, Instruction.Create(OpCodes.Call, top));
+
+        var layout = CopyFormatter(game, helpers, source.Methods.Single(m => m.Name == "ApplyEndingLayout"));
+        // All native selection state and hover handling are complete at this exit.
+        exit.OpCode = OpCodes.Ldarg_0;
+        var il = repaint.Body.GetILProcessor();
+        var canSelect = ending.Fields.Single(f => f.Name == "can_select" && f.FieldType.FullName == "System.Boolean");
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldfld, canSelect);
+        il.Emit(OpCodes.Call, layout);
+        il.Emit(OpCodes.Ret);
+    }
+
     static void PatchSettingsLabel(ModuleDefinition module, string type, int setters, MethodDefinition format)
     {
         var repaint = module.GetType(type).Methods.Single(m => m.Name == "Repaint");
@@ -488,6 +523,8 @@ static partial class BuildSaveNameLayout
             PatchMysticalIntro(game);
             PatchCampaignVacancies(game);
             PatchKoreaEvent(game);
+            PatchIraqEvent(game);
+            PatchEndingLayout(game, source, helpers);
             assembly.Write(args[2], new WriterParameters { Timestamp = 0 });
         }
         }
